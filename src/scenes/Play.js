@@ -52,7 +52,7 @@ class Play extends Phaser.Scene {
 
         //scoreboard
         this.p1Score = 0;
-        let scoreConfig = {
+        this.scoreConfig = {
             frontFamily: 'Courier',
             fontSize: '28px',
             backgroundColor: '#F3B141',
@@ -64,23 +64,46 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig);
+        this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*2, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0);
 
         //end game
         this.gameOver = false;
 
         //countdown clock
-        scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
+        this.startTime = this.getTime();
+        
+        this.scoreConfig.fixedWidth = 0;
+        /*this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', scoreConfig).setOrigin(0.5);
             this.gameOver = true;
-        }, null, this);
+        }, null, this);*/
     }
+
+    endGame() {
+        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', this.scoreConfig).setOrigin(0.5);
+            this.gameOver = true;
+    }
+
+    getTime(){
+        let d = new Date();
+        return d.getTime();
+    }
+
     update(){
+        
+        let elapsedTime = this.getTime() - this.startTime;  
+        let timeLeft = Math.floor((game.settings.gameTimer - elapsedTime)/1000)
+        
+        if (timeLeft == 0 && !this.gameOver){
+            this.endGame();
+        }
 
         //update objects
         if (!this.gameOver){
+            this.timeRemaining.text = timeLeft;
             this.p1Rocket.update();
             this.ship01.update();
             this.ship02.update();
