@@ -9,11 +9,13 @@ let borderPadding = borderUISize/3;
 
 let game = new Phaser.Game(config);
 
-let keyF, keyR, keyLEFT, keyRIGHT;
+let keyF, keyR, keyLEFT, keyRIGHT, keySPACE;
 
 /*
     XXX Display the time remaining (in seconds) on the screen (10) XXX
     Implement a simultaneous two-player mode (30)
+        p1 fires arrows, has a cooldown
+        second player sends out wagons with cargo and gets points for every wagon that gets to the other side
     Redesign the game's artwork, UI, and sound to change its theme/aesthetic (to something other than sci-fi) (60)
         starfield -> grassy meadow
         ships -> horses and wagons

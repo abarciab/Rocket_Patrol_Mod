@@ -1,14 +1,29 @@
 class Rocket extends Phaser.GameObjects.Sprite {
-    constructor(scene, x, y, texture, frame) {
-        super (scene, x, y, texture, frame);
+    constructor(scene, x, y, texture, currentTime) {
+        super (scene, x, y, texture, currentTime);
     
         scene.add.existing(this);
         this.isFiring = false;
         this.moveSpeed = 5;
         this.sfxRocket = scene.sound.add('sfx_rocket');
+
+        //fire coolDown
+        this.fireCoolDown = 3000;
+        
+        this.currentTime = currentTime;
+        this.targetTime = this.currentTime;
+        this.canFire = true;
+        console.log("rocket created. time: " + currentTime);
     }
 
-    update(){
+    update(updatedTime){
+
+        if (updatedTime >= this.targetTime){
+            this.canFire = true;
+            console.log("archer can fire");
+        } else {
+            this.canFire = false;
+        }
 
         //moving
         if (!this.isFiring){
@@ -20,8 +35,9 @@ class Rocket extends Phaser.GameObjects.Sprite {
         }
         
         //firing
-        if (Phaser.Input.Keyboard.JustDown(keyF) && !this.isFiring){
+        if (Phaser.Input.Keyboard.JustDown(keyF) && !this.isFiring && this.canFire){
             this.isFiring = true;
+            this.targetTime = updatedTime + this.fireCoolDown;
             this.sfxRocket.play({volume:0.2});
         }
 
