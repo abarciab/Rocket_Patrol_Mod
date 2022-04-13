@@ -14,8 +14,8 @@ class Play extends Phaser.Scene {
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
-        this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 55, startFrame: 0, endFrame: 3});
-        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 55, startFrame: 0, endFrame: 3});
+        this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
+        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
 
     }
 
