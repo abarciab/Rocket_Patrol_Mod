@@ -12,6 +12,7 @@ class Archer extends Phaser.GameObjects.Sprite {
         this.currentTime = currentTime;
         this.targetTime = this.currentTime;
         this.canFire = true
+        this.reloaded = true;
 
         //arrows
         this.arrowGroup;
@@ -23,10 +24,14 @@ class Archer extends Phaser.GameObjects.Sprite {
 
     update(updatedTime){
 
-        //fire cooldown
+        //play reload sound, just early enough that the player can only shoot once the sound is done playing
+        if (updatedTime >= this.targetTime - this.sfxReload.duration*1000 && this.reloaded == false){
+            this.sfxReload.play({volume: 1});
+            this.reloaded = true;
+        }
+        //actually reload the bow
         if (updatedTime >= this.targetTime && this.canFire == false){
             this.canFire = true;
-            this.sfxReload.play({volume: 1});
             console.log("can fire");
         } else if (updatedTime < this.targetTime){
             this.canFire = false;
@@ -44,6 +49,7 @@ class Archer extends Phaser.GameObjects.Sprite {
         if (Phaser.Input.Keyboard.JustDown(keyF) && this.canFire){
             this.targetTime = updatedTime + this.fireCoolDown;
             this.fire();
+            this.reloaded = false;
         }
 
     }
@@ -64,10 +70,8 @@ class Archer extends Phaser.GameObjects.Sprite {
 
 class ArrowGroup extends Phaser.Physics.Arcade.Group
 {
-
 	constructor(scene) {
 		super(scene.physics.world, scene);
-
 		this.createMultiple({
 			frameQuantity: 30,
 			key: 'rocket',
@@ -75,8 +79,6 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 			visible: true,
 			classType: Arrow
 		});
-
-        this.ID = 15;
 	}
 
     shootArrow(x, y){

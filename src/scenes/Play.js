@@ -15,6 +15,8 @@ class Play extends Phaser.Scene {
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 55, startFrame: 0, endFrame: 3});
+        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 55, startFrame: 0, endFrame: 3});
+
     }
 
     create(){
@@ -48,9 +50,10 @@ class Play extends Phaser.Scene {
 
         //explosion animation
         this.anims.create({
-            key: 'explode',
-            frames: this.anims.generateFrameNumbers('explosion', {start: 0, end: 9, first: 0}),
-            frameRate: 30,
+            key: 'wagonFallAnim',
+            frames: this.anims.generateFrameNumbers('wagonFall', {start: 0, end: 3, first: 0}),
+            frameRate: 12,
+            repeat: 0,
         });
 
         this.anims.create({
@@ -180,8 +183,8 @@ class Play extends Phaser.Scene {
             console.log("impact!");
             this.sound.play('arrow_impact');
             wagon.alpha = 0;
-            let boom = this.add.sprite(wagon.x, wagon.y, 'explosion').setOrigin(0,0);
-            boom.anims.play('explode');
+            let boom = this.add.sprite(wagon.x, wagon.y, 'wagonFall').setOrigin(0,0).setScale(game.settings.wagonScale);
+            boom.anims.play('wagonFallAnim');
             boom.on('animationcomplete', () => {
                 wagon.reset();
                 wagon.alpha = 1;
