@@ -9,6 +9,7 @@ class Menu extends Phaser.Scene {
         this.load.audio('arrow_impact', './assets/arrow impact.wav');
         this.load.audio('sfx_select', './assets/blip_select.wav');
         this.load.audio('reload_bow', './assets/reload.wav');
+        this.load.audio('game_music', './assets/game music.wav');
 
     }
 
