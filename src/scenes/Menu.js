@@ -5,8 +5,8 @@ class Menu extends Phaser.Scene {
 
     preload() {
         // load audio
-        this.load.audio('sfx_rocket', './assets/rocket_shot.wav');
-        this.load.audio('sfx_explosion', './assets/explosion.wav');
+        this.load.audio('bow_shot', './assets/bow shot.wav');
+        this.load.audio('arrow_impact', './assets/arrow impact.wav');
         this.load.audio('sfx_select', './assets/blip_select.wav');
         this.load.audio('reload_bow', './assets/reload.wav');
 
@@ -55,8 +55,10 @@ class Menu extends Phaser.Scene {
     update () {
         if (Phaser.Input.Keyboard.JustDown(keySPACE)){
             game.settings = {
+                wagonScale: 1.5,
                 spaceshipSpeed: 3,
-                gameTimer: 25000
+                gameTimer: 25000,
+                arrowReloadSpeed: 2,
             }
             this.sound.play('sfx_select');
             this.scene.start('play');

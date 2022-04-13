@@ -4,11 +4,11 @@ class Archer extends Phaser.GameObjects.Sprite {
     
         scene.add.existing(this);
         this.moveSpeed = 5;
-        this.sfxRocket = scene.sound.add('sfx_rocket');
+        this.sfxShoot = scene.sound.add('bow_shot');
         this.sfxReload = scene.sound.add('reload_bow');
 
         //fire cooldown
-        this.fireCoolDown = 1000;
+        this.fireCoolDown = 1000 * game.settings.arrowReloadSpeed;
         this.currentTime = currentTime;
         this.targetTime = this.currentTime;
         this.canFire = true
@@ -50,11 +50,10 @@ class Archer extends Phaser.GameObjects.Sprite {
 
     fire(){
         this.ShootArrow();
-        this.sfxRocket.play({volume:0.2});
+        this.sfxShoot.play();
     }
 
     ShootArrow(){
-        //return;
         this.arrowGroup.shootArrow(this.x, this.y - 20);
     }
 
@@ -109,6 +108,10 @@ class Arrow extends Phaser.Physics.Arcade.Sprite {
         this.setVisible(true);
 
         this.setVelocityY(-900);
+    }
+
+    reset(){
+        this.positionX = -10;
     }
 }
 

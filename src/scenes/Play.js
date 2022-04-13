@@ -9,23 +9,17 @@ class Play extends Phaser.Scene {
     preload(){
 
         //images
-        //this.load.image('starfield', 'assets/starfield.png');
-        //this.load.image('starfield_small', 'assets/starfield_small.png');
         this.load.image('field', 'assets/grassy field.png');
         this.load.image('rocket', './assets/rocket.png');
-        this.load.image('wagon', './assets/wagon.png');
-        this.load.image('spaceship', './assets/spaceship.png');
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
+        this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 55, startFrame: 0, endFrame: 3});
     }
 
     create(){
 
-        //stars parallax
-        //this.starsSmall = this.add.tileSprite(0,0, game.config.width, game.config.height, 'starfield_small').setOrigin(0,0);
-        //this.starsLarge = this.add.tileSprite(0,0, game.config.width, game.config.height, 'starfield').setOrigin(0,0);
-
+        //background
         this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0).setScale(1);
 
         //green bar
@@ -48,9 +42,9 @@ class Play extends Phaser.Scene {
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
         //enemy spaceships
-        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'wagon', 0, 30).setOrigin(0, 0);
-        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'wagon', 0, 20).setOrigin(0, 0);
-        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'wagon', 0, 10).setOrigin(0, 0);
+        this.wagon01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'wagonMove', 0, 30).setOrigin(0, 0).setScale(game.settings.wagonScale);
+        this.wagon02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'wagonMove', 0, 20).setOrigin(0, 0).setScale(game.settings.wagonScale);
+        this.wagon03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'wagonMove', 0, 10).setOrigin(0, 0).setScale(game.settings.wagonScale);
 
         //explosion animation
         this.anims.create({
@@ -58,6 +52,13 @@ class Play extends Phaser.Scene {
             frames: this.anims.generateFrameNumbers('explosion', {start: 0, end: 9, first: 0}),
             frameRate: 30,
         });
+
+        this.anims.create({
+            key:'wagonMoveAnim',
+            frames: this.anims.generateFrameNumbers('wagonMove', {start: 0, end: 3, first: 0}),
+            frameRate: 6,
+            repeat: -1,
+        })
 
         //scoreboard
         this.p1Score = 0;
@@ -81,14 +82,13 @@ class Play extends Phaser.Scene {
 
         //countdown clock
         this.startTime = this.getTime();
-        
         this.scoreConfig.fixedWidth = 0;
         
         //arrows
         //this.arrowGroup = new ArrowGroup(this);
-        this.physics.add.overlap(this.ship01, this.archer.arrowGroup, this.testFunction);
-        this.physics.add.overlap(this.ship02, this.archer.arrowGroup, this.testFunction);
-        this.physics.add.overlap(this.ship03, this.archer.arrowGroup, this.testFunction);
+        this.physics.add.overlap(this.wagon01, this.archer.arrowGroup, this.testFunction);
+        this.physics.add.overlap(this.wagon02, this.archer.arrowGroup, this.testFunction);
+        this.physics.add.overlap(this.wagon03, this.archer.arrowGroup, this.testFunction);
     }
 
     testFunction(){
@@ -97,8 +97,12 @@ class Play extends Phaser.Scene {
 
     endGame() {
         this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', this.scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
+        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', this.scoreConfig).setOrigin(0.5);
+        this.gameOver = true;
+
+        this.wagon01.anims.stop();
+        this.wagon02.anims.stop();
+        this.wagon03.anims.stop();
     }
 
     getTime(){
@@ -108,22 +112,28 @@ class Play extends Phaser.Scene {
 
     update(){
         
-        //console.log(this.archer.arrowGroup.ID);
-
         let elapsedTime = this.getTime() - this.startTime;  
         let timeLeft = Math.floor((game.settings.gameTimer - elapsedTime)/1000);
         
-        if (timeLeft == 0 && !this.gameOver){
+        if (timeLeft <= 0 && !this.gameOver){
             this.endGame();
         }
 
         //update objects
         if (!this.gameOver){
+            
+            this.wagon01.anims.play('wagonMoveAnim', true);
+            this.wagon02.anims.play('wagonMoveAnim', true);
+            this.wagon03.anims.play('wagonMoveAnim', true);
+
             this.timeRemaining.text = timeLeft;
             this.archer.update(this.getTime());
-            this.ship01.update();
-            this.ship02.update();
-            this.ship03.update();
+            this.wagon01.update();
+            this.wagon02.update();
+            this.wagon03.update();
+
+            //move background
+            this.field.tilePositionX -= 0.2;
         }
 
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)){
@@ -135,58 +145,51 @@ class Play extends Phaser.Scene {
             this.scene.restart();
         }
         
-        //move background
-        //this.starsLarge.tilePositionX -= 4;
-        //this.starsSmall.tilePositionX -= 2;
-        this.field.tilePositionX -= 1;
-
         this.archer.arrowGroup.children.each( function(arrow) {
-            if (this.checkCollision(arrow, this.ship01)){
-                this.killWagon(this.ship01);
+            if (this.checkCollision(arrow, this.wagon01)){
+                this.killWagon(this.wagon01);
             }
-            if (this.checkCollision(arrow, this.ship02)){
-                this.killWagon(this.ship02);
+            if (this.checkCollision(arrow, this.wagon02)){
+                this.killWagon(this.wagon02);
             }
-            if (this.checkCollision(arrow, this.ship03)){
-                this.killWagon(this.ship03);
+            if (this.checkCollision(arrow, this.wagon03)){
+                this.killWagon(this.wagon03);
             }
         }, this);
-        /*//collision checks
-        if (this.checkCollision(this.archer, this.ship01)){
-            this.shipExplode(this.ship01);
-            this.archer.reset();
-        }
-        if (this.checkCollision(this.archer, this.ship02)){
-            this.shipExplode(this.ship02);
-            this.archer.reset();
-        }
-        if (this.checkCollision(this.archer, this.ship03)){
-            this.shipExplode(this.ship03);
-            this.archer.reset();
-        }*/
+        
     }
 
-    checkCollision(rocket, ship){
-        if (rocket.x < ship.x + ship.width && rocket.x + rocket.width > ship.x && rocket.y < ship.y + ship.height && rocket.height + rocket.y > ship.y){
-            return true;
-        } else {
-            return false;
+    checkCollision(arrow, wagon){
+        if (arrow.active && arrow.visible){
+            let wagonScale = game.settings.wagonScale;
+            if (arrow.x < wagon.x + (wagon.width * wagonScale) && arrow.x + arrow.width > wagon.x && arrow.y < wagon.y + (wagon.height * wagonScale) && arrow.height + arrow.y > wagon.y){
+                arrow.setActive(false);
+                arrow.setVisible(false);
+                arrow.reset();
+                return true;
+    
+            } else {
+                return false;
+            }
         }
     }
 
     killWagon(wagon){
-        this.sound.play('sfx_explosion', {volume: 0.6});
-        wagon.alpha = 0;
-        let boom = this.add.sprite(wagon.x, wagon.y, 'explosion').setOrigin(0,0);
-        boom.anims.play('explode');
-        boom.on('animationcomplete', () => {
-            wagon.reset();
-            wagon.alpha = 1;
-            boom.destroy();
-        });
-        this.p1Score += wagon.points;
-        this.scoreLeft.text = this.p1Score;
-        
+        if (wagon.alive == true){
+            wagon.alive = false;
+            console.log("impact!");
+            this.sound.play('arrow_impact');
+            wagon.alpha = 0;
+            let boom = this.add.sprite(wagon.x, wagon.y, 'explosion').setOrigin(0,0);
+            boom.anims.play('explode');
+            boom.on('animationcomplete', () => {
+                wagon.reset();
+                wagon.alpha = 1;
+                boom.destroy();
+            });
+            this.p1Score += wagon.points;
+            this.scoreLeft.text = this.p1Score;
+        }
     }
 }
 
