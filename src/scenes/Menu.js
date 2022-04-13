@@ -8,6 +8,8 @@ class Menu extends Phaser.Scene {
         this.load.audio('sfx_rocket', './assets/rocket_shot.wav');
         this.load.audio('sfx_explosion', './assets/explosion.wav');
         this.load.audio('sfx_select', './assets/blip_select.wav');
+        this.load.audio('reload_bow', './assets/reload.wav');
+
     }
 
     create(){
@@ -54,7 +56,7 @@ class Menu extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(keySPACE)){
             game.settings = {
                 spaceshipSpeed: 3,
-                gameTimer: 10000
+                gameTimer: 25000
             }
             this.sound.play('sfx_select');
             this.scene.start('play');

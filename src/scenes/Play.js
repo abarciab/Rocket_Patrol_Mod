@@ -1,3 +1,6 @@
+
+
+
 class Play extends Phaser.Scene {
     constructor(){
         super("play");
@@ -6,9 +9,11 @@ class Play extends Phaser.Scene {
     preload(){
 
         //images
-        this.load.image('starfield', 'assets/starfield.png');
-        this.load.image('starfield_small', 'assets/starfield_small.png');
+        //this.load.image('starfield', 'assets/starfield.png');
+        //this.load.image('starfield_small', 'assets/starfield_small.png');
+        this.load.image('field', 'assets/grassy field.png');
         this.load.image('rocket', './assets/rocket.png');
+        this.load.image('wagon', './assets/wagon.png');
         this.load.image('spaceship', './assets/spaceship.png');
 
         //animations
@@ -18,8 +23,10 @@ class Play extends Phaser.Scene {
     create(){
 
         //stars parallax
-        this.starsSmall = this.add.tileSprite(0,0, game.config.width, game.config.height, 'starfield_small').setOrigin(0,0);
-        this.starsLarge = this.add.tileSprite(0,0, game.config.width, game.config.height, 'starfield').setOrigin(0,0);
+        //this.starsSmall = this.add.tileSprite(0,0, game.config.width, game.config.height, 'starfield_small').setOrigin(0,0);
+        //this.starsLarge = this.add.tileSprite(0,0, game.config.width, game.config.height, 'starfield').setOrigin(0,0);
+
+        this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0).setScale(1);
 
         //green bar
         this.add.rectangle(0, 20, game.config.width, 80, 0x00FF00).setOrigin(0,0);
@@ -30,7 +37,9 @@ class Play extends Phaser.Scene {
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
 
         //player rocket
-        this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
+        this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
+        this.archer.create(this);
+
 
         //keyboard input
         keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
@@ -39,9 +48,9 @@ class Play extends Phaser.Scene {
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
         //enemy spaceships
-        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
-        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0, 0);
-        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0, 0);
+        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'wagon', 0, 30).setOrigin(0, 0);
+        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'wagon', 0, 20).setOrigin(0, 0);
+        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'wagon', 0, 10).setOrigin(0, 0);
 
         //explosion animation
         this.anims.create({
@@ -74,11 +83,16 @@ class Play extends Phaser.Scene {
         this.startTime = this.getTime();
         
         this.scoreConfig.fixedWidth = 0;
-        /*this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
-        }, null, this);*/
+        
+        //arrows
+        //this.arrowGroup = new ArrowGroup(this);
+        this.physics.add.overlap(this.ship01, this.archer.arrowGroup, this.testFunction);
+        this.physics.add.overlap(this.ship02, this.archer.arrowGroup, this.testFunction);
+        this.physics.add.overlap(this.ship03, this.archer.arrowGroup, this.testFunction);
+    }
+
+    testFunction(){
+        console.log("COLLISION!");
     }
 
     endGame() {
@@ -94,8 +108,10 @@ class Play extends Phaser.Scene {
 
     update(){
         
+        //console.log(this.archer.arrowGroup.ID);
+
         let elapsedTime = this.getTime() - this.startTime;  
-        let timeLeft = Math.floor((game.settings.gameTimer - elapsedTime)/1000)
+        let timeLeft = Math.floor((game.settings.gameTimer - elapsedTime)/1000);
         
         if (timeLeft == 0 && !this.gameOver){
             this.endGame();
@@ -104,7 +120,7 @@ class Play extends Phaser.Scene {
         //update objects
         if (!this.gameOver){
             this.timeRemaining.text = timeLeft;
-            this.p1Rocket.update(this.getTime());
+            this.archer.update(this.getTime());
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
@@ -120,22 +136,34 @@ class Play extends Phaser.Scene {
         }
         
         //move background
-        this.starsLarge.tilePositionX -= 4;
-        this.starsSmall.tilePositionX -= 2;
+        //this.starsLarge.tilePositionX -= 4;
+        //this.starsSmall.tilePositionX -= 2;
+        this.field.tilePositionX -= 1;
 
-        //collision checks
-        if (this.checkCollision(this.p1Rocket, this.ship01)){
+        this.archer.arrowGroup.children.each( function(arrow) {
+            if (this.checkCollision(arrow, this.ship01)){
+                this.killWagon(this.ship01);
+            }
+            if (this.checkCollision(arrow, this.ship02)){
+                this.killWagon(this.ship02);
+            }
+            if (this.checkCollision(arrow, this.ship03)){
+                this.killWagon(this.ship03);
+            }
+        }, this);
+        /*//collision checks
+        if (this.checkCollision(this.archer, this.ship01)){
             this.shipExplode(this.ship01);
-            this.p1Rocket.reset();
+            this.archer.reset();
         }
-        if (this.checkCollision(this.p1Rocket, this.ship02)){
+        if (this.checkCollision(this.archer, this.ship02)){
             this.shipExplode(this.ship02);
-            this.p1Rocket.reset();
+            this.archer.reset();
         }
-        if (this.checkCollision(this.p1Rocket, this.ship03)){
+        if (this.checkCollision(this.archer, this.ship03)){
             this.shipExplode(this.ship03);
-            this.p1Rocket.reset();
-        }
+            this.archer.reset();
+        }*/
     }
 
     checkCollision(rocket, ship){
@@ -146,18 +174,65 @@ class Play extends Phaser.Scene {
         }
     }
 
-    shipExplode(ship){
+    killWagon(wagon){
         this.sound.play('sfx_explosion', {volume: 0.6});
-        ship.alpha = 0;
-        let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0,0);
+        wagon.alpha = 0;
+        let boom = this.add.sprite(wagon.x, wagon.y, 'explosion').setOrigin(0,0);
         boom.anims.play('explode');
         boom.on('animationcomplete', () => {
-            ship.reset();
-            ship.alpha = 1;
+            wagon.reset();
+            wagon.alpha = 1;
             boom.destroy();
         });
-        this.p1Score += ship.points;
+        this.p1Score += wagon.points;
         this.scoreLeft.text = this.p1Score;
         
     }
 }
+
+
+/*
+class ArrowGroup extends Phaser.Physics.Arcade.Group
+{
+	constructor(scene) {
+		super(scene.physics.world, scene);
+
+		this.createMultiple({
+			frameQuantity: 30,
+			key: 'rocket',
+			active: false,
+			visible: false,
+			classType: Arrow
+		});
+	}
+
+    shootArrow(x, y){
+        const arrow = this.getFirstDead(false);
+        if (arrow){
+            arrow.shoot(x,y);
+        }
+    }
+}
+
+class Arrow extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y){
+        super(scene, x, y, 'arrow');
+    }
+
+    preUpdate(time, delta) {
+        super.preUpdate(time, delta);
+
+        if (this.y <= 5){
+            this.setActive(false);
+            this.setVisible(false);
+        }
+    }
+
+    shoot(){
+        this.body.reset(x,y);
+        this.setActive(true);
+        this.setVisible(true);
+
+        this.setVelocityY(-10);
+    }
+}*/
