@@ -22,7 +22,30 @@ class Play extends Phaser.Scene {
     create(){
 
         //background
-        this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0).setScale(1);
+        this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0);
+
+        //obstacles
+        this.obstacle01 = this.add.sprite(0, game.config.height/2, 'rocket');
+
+         //enemy spaceships
+        this.wagon01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'wagonMove', 0, 30).setOrigin(0, 0).setScale(game.settings.wagonScale);
+        this.wagon02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'wagonMove', 0, 20).setOrigin(0, 0).setScale(game.settings.wagonScale);
+        this.wagon03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'wagonMove', 0, 10).setOrigin(0, 0).setScale(game.settings.wagonScale);
+
+        //wagon falling animation
+        this.anims.create({
+            key: 'wagonFallAnim',
+            frames: this.anims.generateFrameNumbers('wagonFall', {start: 0, end: 3, first: 0}),
+            frameRate: 12,
+            repeat: 0,
+        });
+
+        this.anims.create({
+            key:'wagonMoveAnim',
+            frames: this.anims.generateFrameNumbers('wagonMove', {start: 0, end: 3, first: 0}),
+            frameRate: 6,
+            repeat: -1,
+        })
 
         //green bar
         this.add.rectangle(0, 20, game.config.width, 80, 0x00FF00).setOrigin(0,0);
@@ -42,26 +65,12 @@ class Play extends Phaser.Scene {
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        keyWagon01 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
+        keyWagon02 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
+        keyWagon03 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+        keyESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
-        //enemy spaceships
-        this.wagon01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'wagonMove', 0, 30).setOrigin(0, 0).setScale(game.settings.wagonScale);
-        this.wagon02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'wagonMove', 0, 20).setOrigin(0, 0).setScale(game.settings.wagonScale);
-        this.wagon03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'wagonMove', 0, 10).setOrigin(0, 0).setScale(game.settings.wagonScale);
-
-        //explosion animation
-        this.anims.create({
-            key: 'wagonFallAnim',
-            frames: this.anims.generateFrameNumbers('wagonFall', {start: 0, end: 3, first: 0}),
-            frameRate: 12,
-            repeat: 0,
-        });
-
-        this.anims.create({
-            key:'wagonMoveAnim',
-            frames: this.anims.generateFrameNumbers('wagonMove', {start: 0, end: 3, first: 0}),
-            frameRate: 6,
-            repeat: -1,
-        })
+     
 
         //scoreboard
         this.p1Score = 0;
@@ -100,7 +109,7 @@ class Play extends Phaser.Scene {
 
     endGame() {
         this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5);
-        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', this.scoreConfig).setOrigin(0.5);
+        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ESC for Menu', this.scoreConfig).setOrigin(0.5);
         this.gameOver = true;
 
         this.wagon01.anims.stop();
@@ -137,10 +146,25 @@ class Play extends Phaser.Scene {
 
             //move background
             this.field.tilePositionX -= 0.2;
+
+            if (Phaser.Input.Keyboard.JustDown(keyESC)){
+                this.scene.start('menu');
+            }
+
+            if (Phaser.Input.Keyboard.JustDown(keyWagon01)){
+                this.wagon01.dispatch();
+            }
+            if (Phaser.Input.Keyboard.JustDown(keyWagon02)){
+                this.wagon02.dispatch();
+            }
+            if (Phaser.Input.Keyboard.JustDown(keyWagon03)){
+                this.wagon03.dispatch();
+            }
         }
 
-        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)){
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyESC)){
             this.scene.start('menu');
+            //console.log("want to return to menu");
         }
 
         //reset the game

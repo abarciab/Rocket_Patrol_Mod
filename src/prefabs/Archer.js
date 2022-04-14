@@ -32,7 +32,6 @@ class Archer extends Phaser.GameObjects.Sprite {
         //actually reload the bow
         if (updatedTime >= this.targetTime && this.canFire == false){
             this.canFire = true;
-            console.log("can fire");
         } else if (updatedTime < this.targetTime){
             this.canFire = false;
         }
@@ -92,7 +91,6 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 class Arrow extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y){
         super(scene, x, y, 'rocket');
-        console.log("made an arrow!");
     }
 
     preUpdate(time, delta) {
