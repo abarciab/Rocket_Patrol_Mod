@@ -3,7 +3,7 @@ class Archer extends Phaser.GameObjects.Sprite {
         super (scene, x, y, texture, currentTime);
     
         scene.add.existing(this);
-        this.moveSpeed = 5;
+        this.moveSpeed = game.settings.archerMoveSpeed;
         this.sfxShoot = scene.sound.add('bow_shot');
         this.sfxReload = scene.sound.add('reload_bow');
 

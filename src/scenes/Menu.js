@@ -75,12 +75,13 @@ class Menu extends Phaser.Scene {
 
         game.settings = {
             wagonScale: 1.5,
-            wagonSpeed: 100,
+            archerMoveSpeed: 3,
+            wagonSpeed: 230,
             gameTimer: 75000,
             arrowReloadSpeed: 2,
             twoPlayer: true,
             environmentSpeed: 2,
-            obstacleFrequency: 0.9, //the time, in seconds, the game will wait after spawning on obstacle before trying to make another one. lower valuse = more obstacles
+            obstacleFrequency: 0.4, //the time, in seconds, the game will wait after spawning on obstacle before trying to make another one. lower valuse = more obstacles
             wagonFrequency: 1.8, //the time, in seconds, the game will wait after dispatching a wagon before trying to dispatch another one. lower valuse = more wagons
         }
     }
