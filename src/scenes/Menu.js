@@ -9,8 +9,7 @@ class Menu extends Phaser.Scene {
         this.load.audio('arrow_impact', './assets/arrow impact.wav');
         this.load.audio('sfx_select', './assets/blip_select.wav');
         this.load.audio('reload_bow', './assets/reload.wav');
-        this.load.audio('game_music', './assets/game music.wav');
-
+        
     }
 
     create(){
@@ -35,7 +34,7 @@ class Menu extends Phaser.Scene {
         this.add.text(game.config.width/2, game.config.height/2 - borderPadding*8, 'FOREST PATROL', menuConfig).setOrigin(0.5);
 
 
-        //2 player instructions:
+        //2 player mode:
         menuConfig.fontSize = '20px';
 
         this.p1Instructions1 = this.add.text(borderPadding, game.config.height/2, 'P1: Use (A) and (D) to move and (W) to fire', menuConfig).setOrigin(0, 0.5);
@@ -50,7 +49,7 @@ class Menu extends Phaser.Scene {
         menuConfig.fontSize = '25px';
         this.twoPlayerRules2 = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*6, 'Press space to start, up arrow to swtich to singleplayer mode', menuConfig).setOrigin(0.5);
 
-        //single player instructions:
+        //single player mode:
         menuConfig.fontSize = '20px';
         menuConfig.backgroundColor = '#F3B141';
         menuConfig.color = '#843605';
@@ -77,9 +76,11 @@ class Menu extends Phaser.Scene {
         game.settings = {
             wagonScale: 1.5,
             spaceshipSpeed: 3,
-            gameTimer: 45000,
+            gameTimer: 78000,
             arrowReloadSpeed: 0.2,
             twoPlayer: true,
+            environmentSpeed: 2,
+            obstacleFrequency: 0.8,
         }
     }
 
@@ -87,7 +88,10 @@ class Menu extends Phaser.Scene {
 
         if (Phaser.Input.Keyboard.JustDown(this.keyUP)){
 
-            this.sound.play('sfx_select');            
+            if (game.settings.twoPlayer == true){
+                this.sound.play('sfx_select');   
+            }
+                     
 
             console.log("switching to single player mode");
             game.settings.twoPlayer = false;
@@ -108,7 +112,9 @@ class Menu extends Phaser.Scene {
 
         if (Phaser.Input.Keyboard.JustDown(this.keyDOWN)){
 
-            this.sound.play('sfx_select');            
+            if (game.settings.twoPlayer == false){
+                this.sound.play('sfx_select');   
+            }         
 
             game.settings.twoPlayer = true;
 
