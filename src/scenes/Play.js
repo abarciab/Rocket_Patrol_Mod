@@ -105,12 +105,15 @@ class Play extends Phaser.Scene {
         this.scoreConfig.fixedWidth = 0;
 
         //music
-        this.music = this.sound.add('game_music');
+        this.music = this.sound.add('game_music', {volume: 0.5});
         this.music.play();
 
         //obstacles
         this.treeGroup = new ObstacleGroup(this, 'tree');
-
+        this.treeGroup.children.iterate((tree) => {
+            tree.setScale(1.5);
+            tree.setOrigin(0.5);
+        });
         this.nextObstacleTime = this.getTime();
 
     }
@@ -120,8 +123,8 @@ class Play extends Phaser.Scene {
     }
 
     endGame() {
-        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5);
-        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ESC for Menu', this.scoreConfig).setOrigin(0.5);
+        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5).setDepth(7);
+        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ESC for Menu', this.scoreConfig).setOrigin(0.5).setDepth(7);
         this.gameOver = true;
 
         this.wagon01.anims.stop();
@@ -137,11 +140,10 @@ class Play extends Phaser.Scene {
 
     AddObstacle(){
         let yPos = this.pickLane();
-        console.log("ypos: " + yPos);
         let depth = 2;
         if (yPos == this.obsLane2){
             depth = 4
-        } else if (yPos == this.obsLane2){
+        } else if (yPos == this.obsLane3){
             depth = 6;
         }
         this.treeGroup.SpawnObstacle(yPos, depth);
@@ -196,18 +198,18 @@ class Play extends Phaser.Scene {
 
             //collision checks for arrows vs wagons
             this.archer.arrowGroup.children.each( function(arrow) {
-                if (this.checkCollision(arrow, this.wagon01)){
+                if (this.checkCollision(arrow, this.wagon01, 1, game.settings.wagonScale)){
                     this.killWagon(this.wagon01);
                 }
-                if (this.checkCollision(arrow, this.wagon02)){
+                if (this.checkCollision(arrow, this.wagon02, 1, game.settings.wagonScale)){
                     this.killWagon(this.wagon02);
                 }
-                if (this.checkCollision(arrow, this.wagon03)){
+                if (this.checkCollision(arrow, this.wagon03, 1, game.settings.wagonScale)){
                     this.killWagon(this.wagon03);
                 }
 
                 this.treeGroup.children.each( function(tree) {
-                    if (this.checkCollision(arrow, tree)){
+                    if (this.checkCollision(arrow, tree, 1, 0.6)){
                         arrow.reset();
                     }
                 }, this);
@@ -244,15 +246,13 @@ class Play extends Phaser.Scene {
         }
     }
 
-    checkCollision(arrow, wagon){
-        if (arrow.active && arrow.visible){
-            let wagonScale = game.settings.wagonScale;
-            if (arrow.x < wagon.x + (wagon.width * wagonScale) && arrow.x + arrow.width > wagon.x && arrow.y < wagon.y + (wagon.height * wagonScale) && arrow.height + arrow.y > wagon.y){
-                arrow.setActive(false);
-                arrow.setVisible(false);
-                arrow.reset();
+    checkCollision(obj1, obj2, scale1, scale2){
+        if (obj1.active && obj1.visible && obj2.active && obj2.visible){
+            if (obj1.x < obj2.x + (obj2.width * scale2) && obj1.x + (obj1.width*scale1) > obj2.x && obj1.y < obj2.y + (obj2.height * scale2) && (obj1.height*scale1) + obj1.y > obj2.y){
+                obj1.setActive(false);
+                obj1.setVisible(false);
+                obj1.reset();
                 return true;
-    
             } else {
                 return false;
             }
@@ -264,7 +264,7 @@ class Play extends Phaser.Scene {
             wagon.alive = false;
             this.sound.play('arrow_impact');
             wagon.alpha = 0;
-            let boom = this.add.sprite(wagon.x, wagon.y, 'wagonFall').setOrigin(0,0).setScale(game.settings.wagonScale);
+            let boom = this.add.sprite(wagon.x, wagon.y, 'wagonFall').setOrigin(0,0).setScale(game.settings.wagonScale).setDepth(wagon.depth);
             boom.anims.play('wagonFallAnim');
             boom.on('animationcomplete', () => {
                 wagon.reset();
@@ -300,7 +300,6 @@ class ObstacleGroup extends Phaser.Physics.Arcade.Group{
 
 class Obstacle extends Phaser.Physics.Arcade.Sprite{
     constructor(scene, x, y, texture) {
-        console.log("texture:" + texture);
         super(scene, 0, 0, texture);
     }
 
@@ -313,7 +312,6 @@ class Obstacle extends Phaser.Physics.Arcade.Sprite{
     }
 
     Spawn(y, depth){
-        console.log("y: " + y + " depth: " + depth);
         this.setActive(true);
         this.setVisible(true);
         this.x = 0;

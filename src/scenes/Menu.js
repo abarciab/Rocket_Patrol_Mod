@@ -76,11 +76,11 @@ class Menu extends Phaser.Scene {
         game.settings = {
             wagonScale: 1.5,
             spaceshipSpeed: 3,
-            gameTimer: 78000,
+            gameTimer: 75000,
             arrowReloadSpeed: 0.2,
             twoPlayer: true,
             environmentSpeed: 2,
-            obstacleFrequency: 0.8,
+            obstacleFrequency: 0.9, //the time, in seconds, the game will wait after creating on obstacle before trying to make another one. lower valuse = more obstacles
         }
     }
 
