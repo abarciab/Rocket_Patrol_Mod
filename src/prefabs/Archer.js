@@ -16,6 +16,7 @@ class Archer extends Phaser.GameObjects.Sprite {
 
         //arrows
         this.arrowGroup;
+        this.arrowsReady = 3;
     }
 
     create(scene) {
@@ -28,9 +29,10 @@ class Archer extends Phaser.GameObjects.Sprite {
         if (updatedTime >= this.targetTime - this.sfxReload.duration*1000 && this.reloaded == false){
             this.sfxReload.play({volume: 1});
             this.reloaded = true;
+            this.arrowsReady = 3;
         }
         //actually reload the bow
-        if (updatedTime >= this.targetTime && this.canFire == false){
+        if ((updatedTime >= this.targetTime && this.canFire == false) || this.arrowsReady > 0){
             this.canFire = true;
         } else if (updatedTime < this.targetTime){
             this.canFire = false;
@@ -45,9 +47,13 @@ class Archer extends Phaser.GameObjects.Sprite {
         
         
         //firing
-        if (Phaser.Input.Keyboard.JustDown(keyF) && this.canFire){
-            this.targetTime = updatedTime + this.fireCoolDown;
+        if (Phaser.Input.Keyboard.JustDown(keyF) && this.arrowsReady>0){
+            
             this.fire();
+            
+            this.arrowsReady -= 1;
+            
+            this.targetTime = updatedTime + this.fireCoolDown;
             this.reloaded = false;
         }
 
@@ -73,7 +79,7 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 		super(scene.physics.world, scene);
 		this.createMultiple({
 			frameQuantity: 30,
-			key: 'rocket',
+			key: 'arrow',
 			active: true,
 			visible: true,
 			classType: Arrow
@@ -90,7 +96,7 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 
 class Arrow extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y){
-        super(scene, x, y, 'rocket');
+        super(scene, x, y, 'arrow');
     }
 
     preUpdate(time, delta) {

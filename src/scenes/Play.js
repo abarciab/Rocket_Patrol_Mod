@@ -9,13 +9,14 @@ class Play extends Phaser.Scene {
         this.load.image('field', 'assets/grassy field.png');
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('tree', './assets/tree.png')
+        this.load.image('arrow', './assets/arrow.png')
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
         this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
 
-        this.load.audio('game_music', './assets/game music.wav');
+        
 
     }
 
@@ -64,6 +65,10 @@ class Play extends Phaser.Scene {
         this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
         this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
+
+        this.arrow3 = this.add.sprite(config.width/8, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrow2 = this.add.sprite(config.width/8-20, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrow1 = this.add.sprite(config.width/8-40, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
 
         //player rocket
         this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
@@ -118,6 +123,27 @@ class Play extends Phaser.Scene {
 
     }
 
+    tintArrows(arrowsReady){
+        if (arrowsReady >= 1){
+            this.arrow1.setAlpha(1);
+        }
+        else{
+            this.arrow1.setAlpha(0.2);
+        }
+        if (arrowsReady >= 2){
+            this.arrow2.setAlpha(1);
+        }
+        else{
+            this.arrow2.setAlpha(0.2);
+        }
+        if (arrowsReady >= 3){
+            this.arrow3.setAlpha(1);
+        }
+        else{
+            this.arrow3.setAlpha(0.2);
+        }
+    }
+
     testFunction(){
         console.log("COLLISION!");
     }
@@ -167,6 +193,8 @@ class Play extends Phaser.Scene {
 
         //update objects
         if (!this.gameOver){
+
+            this.tintArrows(this.archer.arrowsReady);
             
             this.wagon01.anims.play('wagonMoveAnim', true);
             this.wagon02.anims.play('wagonMoveAnim', true);

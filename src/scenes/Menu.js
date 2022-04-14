@@ -9,7 +9,7 @@ class Menu extends Phaser.Scene {
         this.load.audio('arrow_impact', './assets/arrow impact.wav');
         this.load.audio('sfx_select', './assets/blip_select.wav');
         this.load.audio('reload_bow', './assets/reload.wav');
-        
+        this.load.audio('game_music', './assets/game music.wav');
     }
 
     create(){
@@ -77,7 +77,7 @@ class Menu extends Phaser.Scene {
             wagonScale: 1.5,
             spaceshipSpeed: 3,
             gameTimer: 75000,
-            arrowReloadSpeed: 0.2,
+            arrowReloadSpeed: 2,
             twoPlayer: true,
             environmentSpeed: 2,
             obstacleFrequency: 0.9, //the time, in seconds, the game will wait after creating on obstacle before trying to make another one. lower valuse = more obstacles
