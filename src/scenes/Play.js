@@ -14,78 +14,133 @@ class Play extends Phaser.Scene {
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
-        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
-
-        
+        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});        
 
     }
 
     create(){
+        //adding borders 
+        this.setupBorders();
+
+        //adding animations
+        this.setupAnims();
+
+        //adding keys
+        this.setupKeys();
+
+        //determining the position of each 'lane', for both wagons and obstacles
+        this.setupLanes();
+        
+        //add scoreboard and set score to 0
+        this.setUpScoreboard();
 
         //background
         this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0);
 
-        //lane yPosition for obstacles
-        this.obsLane1 = borderUISize * 6;
-        this.obsLane2 = borderUISize * 8.5;
-        this.obsLane3 = borderUISize * 11;
+         //creating the wagon group and wagons
+         this.wagonGroup = new WagonGroup(this);
+         this.wagonGroup.children.iterate( (wagon) => {
+            wagon.anims.play('wagonMoveAnim', true);
+            wagon.setScale(game.settings.wagonScale);
+            wagon.setOrigin(0);
+            wagon.body.setSize(90, 40);
+         });
+         /*this.wagon01.anims.play('wagonMoveAnim', true);
+            this.wagon02.anims.play('wagonMoveAnim', true);
+            this.wagon03.anims.play('wagonMoveAnim', true);
+            
+            this.wagon01 = new Wagon(this, game.config.width + borderUISize*6, this.wagonLane1, 'wagonMove', 0, 30).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(1);
+            this.wagon02 = new Wagon(this, game.config.width + borderUISize*3, this.wagonLane2, 'wagonMove', 0, 20).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(3);
+            this.wagon03 = new Wagon(this, game.config.width, this.wagonLane3, 'wagonMove', 0, 10).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(5);*/
 
-        //lane yPosition for wagons
-        this.wagonLane1 = borderUISize*4;
-        this.wagonLane2 = borderUISize*5 + borderPadding*4;
-        this.wagonLane3 = borderUISize*6 + borderPadding*8;
+        //creating archer and arrows
+        this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
+
+        //UI arrows displayed on the lower left to indicate how many times the archer can shoot
+        this.arrow3 = this.add.sprite(config.width/8, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrow2 = this.add.sprite(config.width/8-20, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrow1 = this.add.sprite(config.width/8-40, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+
+        //countdown clock
+        this.startTime = this.getTime();
+        this.scoreConfig.fixedWidth = 0;
+        this.gameOver = false;
+
+        //music
+        this.music = this.sound.add('game_music', {volume: 0.5});
+        this.music.play();
 
         //obstacles
-        this.obstacle01 = this.add.sprite(0, game.config.height/2, 'rocket');
+        this.treeGroup = new ObstacleGroup(this, 'tree');
+        this.treeGroup.children.iterate((tree) => {
+            tree.setScale(1.5);
+            tree.setOrigin(0.5);
+            tree.setSize(25,105);
+        });
+        this.nextObstacleTime = this.getTime();
 
-         //enemy spaceships
-        this.wagon01 = new Wagon(this, game.config.width + borderUISize*6, this.wagonLane1, 'wagonMove', 0, 30).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(1);
-        this.wagon02 = new Wagon(this, game.config.width + borderUISize*3, this.wagonLane2, 'wagonMove', 0, 20).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(3);
-        this.wagon03 = new Wagon(this, game.config.width, this.wagonLane3, 'wagonMove', 0, 10).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(5);
+        //collisions between arrows, wagons, and obstacles
+        this.physics.add.overlap(this.archer.arrowGroup, this.treeGroup, this.arrowObstacleCollission);
+        this.physics.add.overlap(this.archer.arrowGroup, this.wagonGroup, this.arrowWagonCollission.bind(this));
 
-        //wagon falling animation
-        this.anims.create({
+        this.nexWagonTime = 0;
+    }
+
+    setupLanes(){
+        //lane Position for obstacles
+        this.obsLane3 = borderUISize * 6;
+        this.obsLane2 = borderUISize * 8.5;
+        this.obsLane1 = borderUISize * 11;
+
+        //lane Position for wagons
+        this.wagonLane3 = borderUISize*4;
+        this.wagonLane2 = borderUISize*5 + borderPadding*4;
+        this.wagonLane1 = borderUISize*6 + borderPadding*8;
+
+        this.topLaneTime = 0;
+        this.midLaneTime = 0;
+        this.lowLaneTime = 0;
+    }
+
+    setupAnims(){
+         //wagon falling animation
+         this.anims.create({
             key: 'wagonFallAnim',
             frames: this.anims.generateFrameNumbers('wagonFall', {start: 0, end: 3, first: 0}),
             frameRate: 12,
             repeat: 0,
         });
-
+        //wagon moving animation
         this.anims.create({
             key:'wagonMoveAnim',
             frames: this.anims.generateFrameNumbers('wagonMove', {start: 0, end: 3, first: 0}),
             frameRate: 6,
             repeat: -1,
         })
+    }
 
+    setupKeys(){
+        keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        keySendWagonHigh = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
+        keySendWagonMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
+        keySendWagonLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+        keyESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    }
+
+    setupBorders(){
         //green bar
-        this.add.rectangle(0, 20, game.config.width, 80, 0x00FF00).setOrigin(0,0);
+        this.add.rectangle(0, 20, game.config.width, 80, 0x00FF00).setOrigin(0,0).setDepth(6);
         //white borders
         this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
         this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
         this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
+    }
 
-        this.arrow3 = this.add.sprite(config.width/8, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
-        this.arrow2 = this.add.sprite(config.width/8-20, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
-        this.arrow1 = this.add.sprite(config.width/8-40, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
-
-        //player rocket
-        this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
-        this.archer.create(this);
-
-
-        //keyboard input
-        keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        keyWagon01 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
-        keyWagon02 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
-        keyWagon03 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-        keyESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-
-        //scoreboard
+    setUpScoreboard(){
         this.p1Score = 0;
         this.scoreConfig = {
             frontFamily: 'Courier',
@@ -99,27 +154,8 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig);
-        this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*2, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0);
-
-        //end game
-        this.gameOver = false;
-
-        //countdown clock
-        this.startTime = this.getTime();
-        this.scoreConfig.fixedWidth = 0;
-
-        //music
-        this.music = this.sound.add('game_music', {volume: 0.5});
-        this.music.play();
-
-        //obstacles
-        this.treeGroup = new ObstacleGroup(this, 'tree');
-        this.treeGroup.children.iterate((tree) => {
-            tree.setScale(1.5);
-            tree.setOrigin(0.5);
-        });
-        this.nextObstacleTime = this.getTime();
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig).setDepth(10);
+        this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*2, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0).setDepth(7);
 
     }
 
@@ -144,18 +180,17 @@ class Play extends Phaser.Scene {
         }
     }
 
-    testFunction(){
-        console.log("COLLISION!");
-    }
-
     endGame() {
         this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5).setDepth(7);
         this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ESC for Menu', this.scoreConfig).setOrigin(0.5).setDepth(7);
         this.gameOver = true;
 
-        this.wagon01.anims.stop();
-        this.wagon02.anims.stop();
-        this.wagon03.anims.stop();
+        this.wagonGroup.children.iterate( (wagon) => {
+            wagon.anims.stop();
+         });
+        //this.wagon01.anims.stop();
+        //this.wagon02.anims.stop();
+        //this.wagon03.anims.stop();
         this.music.stop();
     }
 
@@ -165,14 +200,30 @@ class Play extends Phaser.Scene {
     }
 
     AddObstacle(){
-        let yPos = this.pickLane();
-        let depth = 2;
-        if (yPos == this.obsLane2){
-            depth = 4
-        } else if (yPos == this.obsLane3){
-            depth = 6;
+        let yPos = this.pickObsLane();
+        let depth;
+
+        if (yPos == this.obsLane3){
+            depth = 1
+        } else if (yPos == this.obsLane2){
+            depth = 3;
+        } else if (yPos == this.obsLane1){
+            depth = 5;
         }
         this.treeGroup.SpawnObstacle(yPos, depth);
+    }
+
+    arrowObstacleCollission(arrow, obstacle){
+        if (arrow.visible && obstacle.visible){
+            arrow.reset();
+        }
+    }
+
+    arrowWagonCollission(arrow, wagon){
+        if (arrow.visible && wagon.visible){
+            arrow.reset();
+            this.killWagon(wagon);
+        }
     }
 
     update(){
@@ -193,60 +244,70 @@ class Play extends Phaser.Scene {
 
         //update objects
         if (!this.gameOver){
-
+            //update arrows anr display
             this.tintArrows(this.archer.arrowsReady);
-            
-            this.wagon01.anims.play('wagonMoveAnim', true);
-            this.wagon02.anims.play('wagonMoveAnim', true);
-            this.wagon03.anims.play('wagonMoveAnim', true);
-
-            this.timeRemaining.text = timeLeft;
             this.archer.update(this.getTime());
-            this.wagon01.update();
-            this.wagon02.update();
-            this.wagon03.update();
 
+            //update UI
+            this.timeRemaining.text = timeLeft;
+            
             //move background
             this.field.tilePositionX -= game.settings.environmentSpeed;
 
+            //return to menu
             if (Phaser.Input.Keyboard.JustDown(keyESC)){
                 this.music.stop();
                 this.scene.start('menu');
             }
 
-            if (Phaser.Input.Keyboard.JustDown(keyWagon01)){
-                this.wagon01.dispatch();
+            //p2 dispatch wagons
+            if (Phaser.Input.Keyboard.JustDown(keySendWagonHigh) && this.getTime() >= this.topLaneTime){
+                this.wagonGroup.dispatch(this.wagonLane3, 3, 0);
+                this.topLaneTime = this.getTime() + 2000;
             }
-            if (Phaser.Input.Keyboard.JustDown(keyWagon02)){
-                this.wagon02.dispatch();
+            if (Phaser.Input.Keyboard.JustDown(keySendWagonMid) && this.getTime() >= this.midLaneTime){
+                this.wagonGroup.dispatch(this.wagonLane2, 2, 2);
+                this.midLaneTime = this.getTime() + 2000;
             }
-            if (Phaser.Input.Keyboard.JustDown(keyWagon03)){
-                this.wagon03.dispatch();
+            if (Phaser.Input.Keyboard.JustDown(keySendWagonLow) && this.getTime() >= this.lowLaneTime){
+                this.wagonGroup.dispatch(this.wagonLane1, 1, 4);
+                this.lowLaneTime = this.getTime() + 2000;
             }
 
-            //collision checks for arrows vs wagons
-            this.archer.arrowGroup.children.each( function(arrow) {
-                if (this.checkCollision(arrow, this.wagon01, 1, game.settings.wagonScale)){
-                    this.killWagon(this.wagon01);
-                }
-                if (this.checkCollision(arrow, this.wagon02, 1, game.settings.wagonScale)){
-                    this.killWagon(this.wagon02);
-                }
-                if (this.checkCollision(arrow, this.wagon03, 1, game.settings.wagonScale)){
-                    this.killWagon(this.wagon03);
-                }
-
-                this.treeGroup.children.each( function(tree) {
-                    if (this.checkCollision(arrow, tree, 1, 0.6)){
-                        arrow.reset();
-                    }
-                }, this);
-
-            }, this);
-
+            //move obstacles
             this.treeGroup.children.each( function(tree) {
                 tree.move(game.settings.environmentSpeed);
             }, this);
+
+            //update wagons
+            this.wagonGroup.children.iterate((wagon) => {
+                if (wagon.active){
+                    wagon.update();
+                    if (wagon.madeIt){
+                        wagon.madeIt = false;
+                        this.sound.play('sfx_select'); 
+                    }
+                } 
+            });
+
+            //single-player: automatically dispatch wagons
+            if (!game.settings.twoPlayer){
+                if (this.getTime() >= this.nexWagonTime){
+                    if (Phaser.Math.Between(1, 100) < 5){
+                        let lane = this.pickWagonLane();
+                        if (lane == this.wagonLane3){
+                            this.wagonGroup.dispatch(this.wagonLane3, 3, 0);
+                        }
+                        else if (lane == this.wagonLane2){
+                            this.wagonGroup.dispatch(this.wagonLane2, 2, 2);
+                        }
+                        else if (lane == this.wagonLane1){
+                            this.wagonGroup.dispatch(this.wagonLane1, 1, 4);
+                        }
+                        this.nexWagonTime = this.getTime() + game.settings.wagonFrequency*1000;
+                    }                    
+                }
+            }
         }
 
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyESC)){
@@ -259,9 +320,9 @@ class Play extends Phaser.Scene {
             this.scene.restart();
         }
         
-    }
+    } 
 
-    pickLane(){
+    pickObsLane(){
         let lane = Phaser.Math.Between(1, 3);
 
         switch(lane){
@@ -274,32 +335,34 @@ class Play extends Phaser.Scene {
         }
     }
 
-    checkCollision(obj1, obj2, scale1, scale2){
-        if (obj1.active && obj1.visible && obj2.active && obj2.visible){
-            if (obj1.x < obj2.x + (obj2.width * scale2) && obj1.x + (obj1.width*scale1) > obj2.x && obj1.y < obj2.y + (obj2.height * scale2) && (obj1.height*scale1) + obj1.y > obj2.y){
-                obj1.setActive(false);
-                obj1.setVisible(false);
-                obj1.reset();
-                return true;
-            } else {
-                return false;
-            }
+    pickWagonLane(){
+        let lane = Phaser.Math.Between(1, 3);
+
+        switch(lane){
+            case 1:
+                return this.wagonLane1;
+            case 2:
+                return this.wagonLane2;
+            default:
+                return this.wagonLane3;
         }
     }
 
     killWagon(wagon){
+        let lanepoints = [0, 50, 25, 10];
+
         if (wagon.alive == true){
             wagon.alive = false;
             this.sound.play('arrow_impact');
             wagon.alpha = 0;
-            let boom = this.add.sprite(wagon.x, wagon.y, 'wagonFall').setOrigin(0,0).setScale(game.settings.wagonScale).setDepth(wagon.depth);
+            let boom = this.add.sprite(wagon.x, wagon.y, 'wagonFall').setOrigin(0).setScale(game.settings.wagonScale).setDepth(wagon.depth);
             boom.anims.play('wagonFallAnim');
             boom.on('animationcomplete', () => {
                 wagon.reset();
                 wagon.alpha = 1;
                 boom.destroy();
             });
-            this.p1Score += wagon.points;
+            this.p1Score += lanepoints[wagon.lane];
             this.scoreLeft.text = this.p1Score;
         }
     }
@@ -318,10 +381,11 @@ class ObstacleGroup extends Phaser.Physics.Arcade.Group{
         })
     }
 
-    SpawnObstacle(y, depth){
+    SpawnObstacle(y, depth, tint){
         let obstacle = this.getFirstDead(false);
         if (obstacle){
             obstacle.Spawn(y, depth);
+            obstacle.setTint(tint);
         }
     }
 }
@@ -329,6 +393,7 @@ class ObstacleGroup extends Phaser.Physics.Arcade.Group{
 class Obstacle extends Phaser.Physics.Arcade.Sprite{
     constructor(scene, x, y, texture) {
         super(scene, 0, 0, texture);
+        
     }
 
     update(){
@@ -345,60 +410,11 @@ class Obstacle extends Phaser.Physics.Arcade.Sprite{
         this.x = 0;
         this.y = y;
         this.setDepth(depth);
-
-        //this.setVelocityX(game.settings.environmentSpeed* 1000);
     }
 
     move(moveSpeed){
         this.update();
-        //console.log("current pos: " + this.x + "adding: " + moveSpeed);
         this.x += moveSpeed;
     }
 }
 
-
-/*
-class ArrowGroup extends Phaser.Physics.Arcade.Group
-{
-	constructor(scene) {
-		super(scene.physics.world, scene);
-
-		this.createMultiple({
-			frameQuantity: 30,
-			key: 'rocket',
-			active: false,
-			visible: false,
-			classType: Arrow
-		});
-	}
-
-    shootArrow(x, y){
-        const arrow = this.getFirstDead(false);
-        if (arrow){
-            arrow.shoot(x,y);
-        }
-    }
-}
-
-class Arrow extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y){
-        super(scene, x, y, 'arrow');
-    }
-
-    preUpdate(time, delta) {
-        super.preUpdate(time, delta);
-
-        if (this.y <= 5){
-            this.setActive(false);
-            this.setVisible(false);
-        }
-    }
-
-    shoot(){
-        this.body.reset(x,y);
-        this.setActive(true);
-        this.setVisible(true);
-
-        this.setVelocityY(-10);
-    }
-}*/

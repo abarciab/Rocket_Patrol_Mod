@@ -5,7 +5,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug:false,
+            debug: false,
             gravity: {y:0}
         }
     },
@@ -18,7 +18,7 @@ let borderPadding = borderUISize/3;
 
 const game = new Phaser.Game(config);
 
-let keyF, keyR, keyLEFT, keyRIGHT, keySPACE, keyWagon01, keyWagon02, keyWagon03, keyESC;
+let keyF, keyR, keyLEFT, keyRIGHT, keySPACE, keySendWagonHigh, keySendWagonMid, keySendWagonLow, keyESC;
 
 /*
     XXX Display the time remaining (in seconds) on the screen (10) XXX

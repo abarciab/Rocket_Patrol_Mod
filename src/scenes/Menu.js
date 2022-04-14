@@ -47,7 +47,7 @@ class Menu extends Phaser.Scene {
         menuConfig.backgroundColor = '#00FF00';
         menuConfig.color = '#000';
         menuConfig.fontSize = '25px';
-        this.twoPlayerRules2 = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*6, 'Press space to start, up arrow to swtich to singleplayer mode', menuConfig).setOrigin(0.5);
+        this.twoPlayerRules2 = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*6, 'Press space to start, up arrow to switch to singleplayer mode', menuConfig).setOrigin(0.5);
 
         //single player mode:
         menuConfig.fontSize = '20px';
@@ -62,7 +62,7 @@ class Menu extends Phaser.Scene {
         menuConfig.backgroundColor = '#00FF00';
         menuConfig.color = '#000';
         menuConfig.fontSize = '25px',
-        this.singlePlayerRules2 = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*6, 'Press space to start, down arrow to swtich to 2 player mode', menuConfig).setOrigin(0.5).setVisible(false);
+        this.singlePlayerRules2 = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*6, 'Press space to start, down arrow to switch to 2 player mode', menuConfig).setOrigin(0.5).setVisible(false);
 
         //keys
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
@@ -75,12 +75,13 @@ class Menu extends Phaser.Scene {
 
         game.settings = {
             wagonScale: 1.5,
-            spaceshipSpeed: 3,
+            wagonSpeed: 100,
             gameTimer: 75000,
             arrowReloadSpeed: 2,
             twoPlayer: true,
             environmentSpeed: 2,
-            obstacleFrequency: 0.9, //the time, in seconds, the game will wait after creating on obstacle before trying to make another one. lower valuse = more obstacles
+            obstacleFrequency: 0.9, //the time, in seconds, the game will wait after spawning on obstacle before trying to make another one. lower valuse = more obstacles
+            wagonFrequency: 1.8, //the time, in seconds, the game will wait after dispatching a wagon before trying to dispatch another one. lower valuse = more wagons
         }
     }
 
@@ -137,22 +138,5 @@ class Menu extends Phaser.Scene {
             this.sound.play('sfx_select');
             this.scene.start('play');
         }
-
-        /*if (Phaser.Input.Keyboard.JustDown(keyLEFT)){
-            game.settings = {
-                spaceshipSpeed: 3,
-                gameTimer: 60000
-            }
-            this.sound.play('sfx_select');
-            this.scene.start('play');
-        }
-        if (Phaser.Input.Keyboard.JustDown(keyRIGHT)){
-            game.settings = {
-                spaceshipSpeed: 4,
-                gameTimer: 2000
-            }
-            this.sound.play('sfx_select');
-            this.scene.start('play');
-        }*/
     }
 }

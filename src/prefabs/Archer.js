@@ -15,12 +15,8 @@ class Archer extends Phaser.GameObjects.Sprite {
         this.reloaded = true;
 
         //arrows
-        this.arrowGroup;
-        this.arrowsReady = 3;
-    }
-
-    create(scene) {
         this.arrowGroup = new ArrowGroup(scene);
+        this.arrowsReady = 3;
     }
 
     update(updatedTime){
@@ -29,11 +25,13 @@ class Archer extends Phaser.GameObjects.Sprite {
         if (updatedTime >= this.targetTime - this.sfxReload.duration*1000 && this.reloaded == false){
             this.sfxReload.play({volume: 1});
             this.reloaded = true;
-            this.arrowsReady = 3;
         }
         //actually reload the bow
         if ((updatedTime >= this.targetTime && this.canFire == false) || this.arrowsReady > 0){
             this.canFire = true;
+            if (this.arrowsReady == 0){
+                this.arrowsReady = 3;
+            }
         } else if (updatedTime < this.targetTime){
             this.canFire = false;
         }
@@ -80,8 +78,8 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 		this.createMultiple({
 			frameQuantity: 30,
 			key: 'arrow',
-			active: true,
-			visible: true,
+			active: false,
+			visible: false,
 			classType: Arrow
 		});
 	}
@@ -117,7 +115,10 @@ class Arrow extends Phaser.Physics.Arcade.Sprite {
     }
 
     reset(){
-        this.positionX = -10;
+        this.setVisible(false);
+        this.setActive(false);
+        this.x = -10;
+        console.log("restting arrow");
     }
 }
 
