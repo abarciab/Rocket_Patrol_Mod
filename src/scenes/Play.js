@@ -4,12 +4,11 @@ class Play extends Phaser.Scene {
     }
 
     preload(){
-
         //images
         this.load.image('field', 'assets/grassy field.png');
         this.load.image('rocket', './assets/rocket.png');
-        this.load.image('tree', './assets/tree.png')
-        this.load.image('arrow', './assets/arrow.png')
+        this.load.image('tree', './assets/tree.png');
+        this.load.image('arrow', './assets/arrow.png');
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
@@ -37,22 +36,15 @@ class Play extends Phaser.Scene {
         //background
         this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0);
 
-         //creating the wagon group and wagons
-         this.wagonGroup = new WagonGroup(this);
-         this.wagonGroup.children.iterate( (wagon) => {
+        //creating the wagon group and wagons
+        this.wagonGroup = new WagonGroup(this);
+        this.wagonGroup.children.iterate( (wagon) => {
             wagon.anims.play('wagonMoveAnim', true);
             wagon.setScale(game.settings.wagonScale);
             wagon.setOrigin(0);
             wagon.body.setSize(90, 40);
-         });
-         /*this.wagon01.anims.play('wagonMoveAnim', true);
-            this.wagon02.anims.play('wagonMoveAnim', true);
-            this.wagon03.anims.play('wagonMoveAnim', true);
-            
-            this.wagon01 = new Wagon(this, game.config.width + borderUISize*6, this.wagonLane1, 'wagonMove', 0, 30).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(1);
-            this.wagon02 = new Wagon(this, game.config.width + borderUISize*3, this.wagonLane2, 'wagonMove', 0, 20).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(3);
-            this.wagon03 = new Wagon(this, game.config.width, this.wagonLane3, 'wagonMove', 0, 10).setOrigin(0, 0).setScale(game.settings.wagonScale).setDepth(5);*/
-
+        });
+         
         //creating archer and arrows
         this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
 
@@ -75,7 +67,8 @@ class Play extends Phaser.Scene {
         this.treeGroup.children.iterate((tree) => {
             tree.setScale(1.5);
             tree.setOrigin(0.5);
-            tree.setSize(25,105);
+            tree.setSize(20,90);
+            tree.setOffset(16, 30)
         });
         this.nextObstacleTime = this.getTime();
 
@@ -141,7 +134,9 @@ class Play extends Phaser.Scene {
     }
 
     setUpScoreboard(){
+        this.score = 0;
         this.p1Score = 0;
+        this.p2Score = 0;
         this.scoreConfig = {
             frontFamily: 'Courier',
             fontSize: '28px',
@@ -154,8 +149,10 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig).setDepth(10);
-        this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*2, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0).setDepth(7);
+        this.archerScore = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
+        this.totalScore = this.add.text(game.config.width/2, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
+        this.dispatcherScore = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
+        this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*4, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0).setDepth(7);
 
     }
 
@@ -226,8 +223,21 @@ class Play extends Phaser.Scene {
         }
     }
 
-    update(){
+    updateScore(change){
+        if (change > 0){
+            this.p1Score += change;
+        } else{
+            this.p2Score -= change;
+        }
+        this.score += change;
 
+        this.archerScore.text = this.p1Score;
+        this.totalScore.text = this.score;
+        this.dispatcherScore.text = this.p2Score;
+    }
+
+    update(){
+        //try to add a new obstacle to the scene
         if (this.getTime() >= this.nextObstacleTime){
             if (Phaser.Math.Between(1, 100) < 5){
                 this.AddObstacle();
@@ -235,9 +245,9 @@ class Play extends Phaser.Scene {
             }
         }
         
+        //countdown timer
         let elapsedTime = this.getTime() - this.startTime;  
         let timeLeft = Math.floor((game.settings.gameTimer - elapsedTime)/1000);
-        
         if (timeLeft <= 0 && !this.gameOver){
             this.endGame();
         }
@@ -285,9 +295,10 @@ class Play extends Phaser.Scene {
                     wagon.update();
                     if (wagon.madeIt){
                         wagon.madeIt = false;
+                        this.updateScore(-game.settings.lanePointsWagon[wagon.lane])
                         this.sound.play('sfx_select'); 
                     }
-                } 
+                }
             });
 
             //single-player: automatically dispatch wagons
@@ -305,22 +316,21 @@ class Play extends Phaser.Scene {
                             this.wagonGroup.dispatch(this.wagonLane1, 1, 4);
                         }
                         this.nexWagonTime = this.getTime() + game.settings.wagonFrequency*1000;
-                    }                    
+                    }
                 }
             }
         }
 
+        //return to menu
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyESC)){
             this.scene.start('menu');
-            //console.log("want to return to menu");
         }
 
         //reset the game
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
             this.scene.restart();
         }
-        
-    } 
+    }
 
     pickObsLane(){
         let lane = Phaser.Math.Between(1, 3);
@@ -349,8 +359,6 @@ class Play extends Phaser.Scene {
     }
 
     killWagon(wagon){
-        let lanepoints = [0, 50, 25, 10];
-
         if (wagon.alive == true){
             wagon.alive = false;
             this.sound.play('arrow_impact');
@@ -362,8 +370,7 @@ class Play extends Phaser.Scene {
                 wagon.alpha = 1;
                 boom.destroy();
             });
-            this.p1Score += lanepoints[wagon.lane];
-            this.scoreLeft.text = this.p1Score;
+            this.updateScore(game.settings.lanePointsArcher[wagon.lane])
         }
     }
 }
@@ -378,7 +385,7 @@ class ObstacleGroup extends Phaser.Physics.Arcade.Group{
             active: false,
             visible: false,
             classType: Obstacle,
-        })
+        });
     }
 
     SpawnObstacle(y, depth, tint){

@@ -81,8 +81,10 @@ class Menu extends Phaser.Scene {
             arrowReloadSpeed: 2,
             twoPlayer: true,
             environmentSpeed: 2,
-            obstacleFrequency: 0.4, //the time, in seconds, the game will wait after spawning on obstacle before trying to make another one. lower valuse = more obstacles
-            wagonFrequency: 1.8, //the time, in seconds, the game will wait after dispatching a wagon before trying to dispatch another one. lower valuse = more wagons
+            obstacleFrequency: 0.9, //the time, in seconds, the game will wait after spawning on obstacle before trying to make another one. lower valuse = more obstacles
+            wagonFrequency: 1.2, //the time, in seconds, the game will wait after dispatching a wagon before trying to dispatch another one. lower valuse = more wagons [single player only]
+            lanePointsArcher: [0, 10, 20, 30], //starting with the bottom lane, this is the number of points the archer gets for shooting wagons in each lane
+            lanePointsWagon: [0, 60, 40, 30], //starting with the bottom lane, this is the number of points the dispatcher gets for each wagon that makes it across
         }
     }
 
@@ -93,7 +95,6 @@ class Menu extends Phaser.Scene {
             if (game.settings.twoPlayer == true){
                 this.sound.play('sfx_select');   
             }
-                     
 
             console.log("switching to single player mode");
             game.settings.twoPlayer = false;
@@ -109,7 +110,6 @@ class Menu extends Phaser.Scene {
             this.singlePlayerInstructions2.setVisible(true);
             this.singlePlayerRules1.setVisible(true);
             this.singlePlayerRules2.setVisible(true);
-            
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.keyDOWN)){
