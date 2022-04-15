@@ -16,7 +16,7 @@ class Archer extends Phaser.GameObjects.Sprite {
 
         //arrows
         this.arrowGroup = new ArrowGroup(scene);
-        this.arrowsReady = 3;
+        this.arrowsReady = game.settings.maxArrows;
     }
 
     update(updatedTime){
@@ -27,10 +27,11 @@ class Archer extends Phaser.GameObjects.Sprite {
             this.reloaded = true;
         }
         //actually reload the bow
-        if ((updatedTime >= this.targetTime && this.canFire == false) || this.arrowsReady > 0){
+        if ((updatedTime >= this.targetTime && this.canFire == false) || (this.arrowsReady > 0) ){
             this.canFire = true;
-            if (this.arrowsReady == 0){
-                this.arrowsReady = 3;
+            if (this.arrowsReady == 0 || this.reloaded == true){
+                this.arrowsReady = game.settings.maxArrows;
+                this.targetTime = -1;
             }
         } else if (updatedTime < this.targetTime){
             this.canFire = false;
@@ -43,15 +44,19 @@ class Archer extends Phaser.GameObjects.Sprite {
             this.x += this.moveSpeed;
         }
         
-        
         //firing
         if (Phaser.Input.Keyboard.JustDown(keyF) && this.arrowsReady>0){
             
             this.fire();
             
             this.arrowsReady -= 1;
+
+            if (this.arrowsReady == 4 || this.targetTime == -1)
+            {
+                this.targetTime = updatedTime + this.fireCoolDown;
+            }
             
-            this.targetTime = updatedTime + this.fireCoolDown;
+            
             this.reloaded = false;
         }
 
@@ -76,7 +81,7 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 	constructor(scene) {
 		super(scene.physics.world, scene);
 		this.createMultiple({
-			frameQuantity: 30,
+			frameQuantity: 5,
 			key: 'arrow',
 			active: false,
 			visible: false,
@@ -118,7 +123,6 @@ class Arrow extends Phaser.Physics.Arcade.Sprite {
         this.setVisible(false);
         this.setActive(false);
         this.x = -10;
-        console.log("restting arrow");
     }
 }
 

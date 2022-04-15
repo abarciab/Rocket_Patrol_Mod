@@ -4,7 +4,7 @@ class WagonGroup extends Phaser.Physics.Arcade.Group
 		super(scene.physics.world, scene);
 
         this.createMultiple({
-            frameQuantity: 8,
+            frameQuantity: 5,
             key: 'wagon',
             active: false,
             visible: false,
@@ -41,10 +41,14 @@ class Wagon extends Phaser.GameObjects.Sprite {
     }
 
     update() {
-        if (this.x <= 0 - this.displayWidth/2){
+        if (this.x <= 0 - this.displayWidth){
             this.madeIt = true;
             this.reset();
         }
+    }
+
+    stop(){
+        this.body.setVelocityX(0);
     }
 
     reset() {
@@ -54,9 +58,6 @@ class Wagon extends Phaser.GameObjects.Sprite {
         this.visible = false;
         this.active = false;
         this.body.setVelocityX(0);
-        if (game.settings.twoPlayer == false){
-            console.log("in singleplayer, and want to send a wagon");
-        }
     }
 
     dispatch(yPos) {

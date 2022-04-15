@@ -5,15 +5,22 @@ class Play extends Phaser.Scene {
 
     preload(){
         //images
-        this.load.image('field', 'assets/grassy field.png');
+        
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('tree', './assets/tree.png');
         this.load.image('arrow', './assets/arrow.png');
+        this.load.image('handle', './assets/handle.png');
+        this.load.image('bar', './assets/colored bar.png');
+        this.load.image('wagonIcon', './assets/wagon icon.png');
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
         this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});        
+
+        if (!game.settings.twoPlayer){
+            this.load.audio('wagon_success_bad', './assets/wagon success singleplayer.wav');
+        }
 
     }
 
@@ -33,6 +40,9 @@ class Play extends Phaser.Scene {
         //add scoreboard and set score to 0
         this.setUpScoreboard();
 
+        //adding icons for both players
+        this.setupIcons();
+
         //background
         this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0);
 
@@ -47,11 +57,6 @@ class Play extends Phaser.Scene {
          
         //creating archer and arrows
         this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
-
-        //UI arrows displayed on the lower left to indicate how many times the archer can shoot
-        this.arrow3 = this.add.sprite(config.width/8, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
-        this.arrow2 = this.add.sprite(config.width/8-20, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
-        this.arrow1 = this.add.sprite(config.width/8-40, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
 
         //countdown clock
         this.startTime = this.getTime();
@@ -77,6 +82,25 @@ class Play extends Phaser.Scene {
         this.physics.add.overlap(this.archer.arrowGroup, this.wagonGroup, this.arrowWagonCollission.bind(this));
 
         this.nexWagonTime = 0;
+    }
+
+    setupIcons(){
+        //UI arrows displayed on the lower left to indicate how many times the archer can shoot
+        this.arrowIcon1 = this.add.sprite(config.width/8-80, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrowIcon2 = this.add.sprite(config.width/8-60, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrowIcon3 = this.add.sprite(config.width/8-40, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrowIcon4 = this.add.sprite(config.width/8-20, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        this.arrowIcon5 = this.add.sprite(config.width/8, config.height - borderPadding/2, 'arrow').setOrigin(1).setDepth(8).setScale(1.2);
+        
+        if (game.settings.twoPlayer){
+            //UI wagons displayed on the lower right to indicate how many wagons dispatcher can send
+            this.wagonIcon1 = this.add.sprite(config.width*0.6, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+            this.wagonIcon2 = this.add.sprite(config.width*0.6 + 80, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+            this.wagonIcon3 = this.add.sprite(config.width*0.6 + 160, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+            this.wagonIcon4 = this.add.sprite(config.width*0.6 + 240, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+            this.wagonIcon5 = this.add.sprite(config.width*0.6 + 320, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+            //this.wagonIcon6 = this.add.sprite(config.width*0.6 + 400, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+        }
     }
 
     setupLanes(){
@@ -150,30 +174,37 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
         this.archerScore = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
-        this.totalScore = this.add.text(game.config.width/2, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
         this.dispatcherScore = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
         this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*4, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0).setDepth(7);
 
+        this.scoreHandle = this.physics.add.sprite(game.config.width/2, borderUISize + borderPadding*1.5, 'handle').setDepth(12).setScale(0.5, 1);
+        this.scorebar = this.physics.add.sprite(game.config.width/2, borderUISize + borderPadding*1.5, 'bar').setDepth(11).setScale(20, 1);
     }
 
-    tintArrows(arrowsReady){
-        if (arrowsReady >= 1){
-            this.arrow1.setAlpha(1);
-        }
-        else{
-            this.arrow1.setAlpha(0.2);
-        }
-        if (arrowsReady >= 2){
-            this.arrow2.setAlpha(1);
-        }
-        else{
-            this.arrow2.setAlpha(0.2);
-        }
-        if (arrowsReady >= 3){
-            this.arrow3.setAlpha(1);
-        }
-        else{
-            this.arrow3.setAlpha(0.2);
+    updateIcons(arrowsReady, activeWagons){
+        if (arrowsReady >= 1){ this.arrowIcon1.setAlpha(1); }
+        else{ this.arrowIcon1.setAlpha(0.2); }
+        if (arrowsReady >= 2){ this.arrowIcon2.setAlpha(1); }
+        else{ this.arrowIcon2.setAlpha(0.2); }
+        if (arrowsReady >= 3){ this.arrowIcon3.setAlpha(1); }
+        else{ this.arrowIcon3.setAlpha(0.2); }
+        if (arrowsReady >= 4){ this.arrowIcon4.setAlpha(1); }
+        else{ this.arrowIcon4.setAlpha(0.2); }
+        if (arrowsReady >= 5){ this.arrowIcon5.setAlpha(1); }
+        else{ this.arrowIcon5.setAlpha(0.2); }
+
+        if (game.settings.twoPlayer){
+            activeWagons = 5-activeWagons;
+            if (activeWagons >= 1){ this.wagonIcon1.setAlpha(1); } 
+            else { this.wagonIcon1.setAlpha(0.2); }
+            if (activeWagons >= 2){ this.wagonIcon2.setAlpha(1); } 
+            else { this.wagonIcon2.setAlpha(0.2); }
+            if (activeWagons >= 3){ this.wagonIcon3.setAlpha(1); } 
+            else { this.wagonIcon3.setAlpha(0.2); }
+            if (activeWagons >= 4){ this.wagonIcon4.setAlpha(1); } 
+            else { this.wagonIcon4.setAlpha(0.2); }
+            if (activeWagons >= 5){ this.wagonIcon5.setAlpha(1); } 
+            else { this.wagonIcon5.setAlpha(0.2); }
         }
     }
 
@@ -184,10 +215,8 @@ class Play extends Phaser.Scene {
 
         this.wagonGroup.children.iterate( (wagon) => {
             wagon.anims.stop();
+            wagon.stop();
          });
-        //this.wagon01.anims.stop();
-        //this.wagon02.anims.stop();
-        //this.wagon03.anims.stop();
         this.music.stop();
     }
 
@@ -232,8 +261,10 @@ class Play extends Phaser.Scene {
         this.score += change;
 
         this.archerScore.text = this.p1Score;
-        this.totalScore.text = this.score;
         this.dispatcherScore.text = this.p2Score;
+
+        this.scoreHandle.x += change/2;
+        this.scorebar.x += change/2;
     }
 
     update(){
@@ -255,7 +286,7 @@ class Play extends Phaser.Scene {
         //update objects
         if (!this.gameOver){
             //update arrows anr display
-            this.tintArrows(this.archer.arrowsReady);
+            this.updateIcons(this.archer.arrowsReady, this.wagonGroup.countActive(true));
             this.archer.update(this.getTime());
 
             //update UI
@@ -271,19 +302,21 @@ class Play extends Phaser.Scene {
             }
 
             //p2 dispatch wagons
-            if (Phaser.Input.Keyboard.JustDown(keySendWagonHigh) && this.getTime() >= this.topLaneTime){
-                this.wagonGroup.dispatch(this.wagonLane3, 3, 0);
-                this.topLaneTime = this.getTime() + 2000;
+            if (game.settings.twoPlayer){
+                if (Phaser.Input.Keyboard.JustDown(keySendWagonHigh) && this.getTime() >= this.topLaneTime){
+                    this.wagonGroup.dispatch(this.wagonLane3, 3, 0);
+                    this.topLaneTime = this.getTime() + game.settings.laneCooldown;
+                }
+                if (Phaser.Input.Keyboard.JustDown(keySendWagonMid) && this.getTime() >= this.midLaneTime){
+                    this.wagonGroup.dispatch(this.wagonLane2, 2, 2);
+                    this.midLaneTime = this.getTime() + game.settings.laneCooldown;
+                }
+                if (Phaser.Input.Keyboard.JustDown(keySendWagonLow) && this.getTime() >= this.lowLaneTime){
+                    this.wagonGroup.dispatch(this.wagonLane1, 1, 4);
+                    this.lowLaneTime = this.getTime() + game.settings.laneCooldown;
+                }
             }
-            if (Phaser.Input.Keyboard.JustDown(keySendWagonMid) && this.getTime() >= this.midLaneTime){
-                this.wagonGroup.dispatch(this.wagonLane2, 2, 2);
-                this.midLaneTime = this.getTime() + 2000;
-            }
-            if (Phaser.Input.Keyboard.JustDown(keySendWagonLow) && this.getTime() >= this.lowLaneTime){
-                this.wagonGroup.dispatch(this.wagonLane1, 1, 4);
-                this.lowLaneTime = this.getTime() + 2000;
-            }
-
+            
             //move obstacles
             this.treeGroup.children.each( function(tree) {
                 tree.move(game.settings.environmentSpeed);
@@ -296,7 +329,11 @@ class Play extends Phaser.Scene {
                     if (wagon.madeIt){
                         wagon.madeIt = false;
                         this.updateScore(-game.settings.lanePointsWagon[wagon.lane])
-                        this.sound.play('sfx_select'); 
+                        if (game.settings.twoPlayer){
+                            this.sound.play('wagon_sucess'); 
+                        } else {
+                            this.sound.play('wagon_success_bad');
+                        }
                     }
                 }
             });
