@@ -6,16 +6,17 @@ class Play extends Phaser.Scene {
     preload(){
         //images
         this.load.image('sign_hollow', './assets/wood sign cutout.png');
-        this.load.image('rocket', './assets/rocket.png');
         this.load.image('tree', './assets/tree.png');
         this.load.image('arrow', './assets/arrow.png');
         this.load.image('handle', './assets/handle.png');
         this.load.image('bar', './assets/colored bar.png');
         this.load.image('wagonIcon', './assets/wagon icon.png');
+        //this.load.image('dude', './assets/dude.png');
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
-        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});        
+        this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3}); 
+        this.load.spritesheet('archer', './assets/dude.png', {frameWidth: 45, frameHeight: 58, startFrame: 0, endFrame: 5});        
 
         if (!game.settings.twoPlayer){
             this.load.audio('wagon_success_bad', './assets/wagon success singleplayer.wav');
@@ -53,9 +54,11 @@ class Play extends Phaser.Scene {
             wagon.setOrigin(0);
             wagon.body.setSize(90, 40);
         });
+
+        //this.add.sprite(game.config.width/2, game.config.height/2, 'dude');
          
         //creating archer and arrows
-        this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket', this.getTime()).setOrigin(0.5, 0);
+        this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding + 10, 'dude', this.getTime()).setOrigin(0.5, 1).setDepth(7).setScale(1.2);
 
         //countdown clock
         this.startTime = this.getTime();
@@ -133,6 +136,25 @@ class Play extends Phaser.Scene {
             frameRate: 6,
             repeat: -1,
         })
+
+        this.anims.create({
+            key:'archerMove',
+            frames: this.anims.generateFrameNumbers('archer', {start: 1, end: 4, first: 1}),
+            frameRate: 12,
+            repeat: -1,
+        })
+        this.anims.create({
+            key:'archerIdle',
+            frames: this.anims.generateFrameNumbers('archer', {start: 0, end: 0, first: 0}),
+            frameRate: 6,
+            repeat: -1,
+        })
+        this.anims.create({
+            key:'archerShoot',
+            frames: this.anims.generateFrameNumbers('archer', {start: 5, end: 5, first: 5}),
+            frameRate: 5,
+            repeat: 0,
+        })
     }
 
     setupKeys(){
@@ -147,22 +169,12 @@ class Play extends Phaser.Scene {
     }
 
     setupBorders(){
-        //green bar
-        //this.add.rectangle(0, 0, game.config.width, 80, 0xFFFFFF).setOrigin(0,0).setDepth(6);
-        //white borders
-        //this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
         if (game.settings.twoPlayer){
             this.add.sprite(game.config.width/2, -1, 'sign_hollow').setOrigin(0.5, 0).setScale(5, 1).setDepth(8);
         } else{
             this.add.sprite(game.config.width/2, -1, 'sign').setOrigin(0.5, 0).setScale(5, 1).setDepth(6);
         }
-        
-
         this.add.sprite(game.config.width/2, game.config.height + 35, 'sign').setOrigin(0.5, 1).setScale(20, 1).setDepth(6);
-
-        //this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
-        //this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
-        //this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
     }
 
     setUpScoreboard(){
@@ -314,8 +326,7 @@ class Play extends Phaser.Scene {
             this.endGame();
         }
 
-        console.log('score: ${this.score}, change: ${change}');
-
+        //FIX!
         if (this.score > 730 && this.score-change < 730){
             change = 730 - (this.score-change);
         } else if (this.score < -730 && this.score-change > -730){
@@ -326,16 +337,37 @@ class Play extends Phaser.Scene {
             change = 0;
         }
 
-        console.log('score: ${this.score}, change: ${change}');
-
-
         this.scoreHandle.x += change/2;
-            this.scorebar.x += change/2;
-
+        this.scorebar.x += change/2;
         
     }
 
     update(){
+
+        if (this.archer.shooting){
+            this.archer.flipX = false;
+            this.archer.anims.play("archerShoot");
+            this.archer.shooting = false;
+        }
+        else if (this.archer.movingRight){
+            this.archer.flipX = false;
+            if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerMove'){
+                this.archer.anims.play('archerMove');
+            }            
+        }
+        else if (this.archer.movingLeft){
+            this.archer.flipX = true;
+            if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerMove'){
+                this.archer.anims.play('archerMove');
+            }   
+        }
+        else if (!this.archer.movingRight && !this.archer.movingLeft && !(this.archer.anims.isPlaying && this.archer.anims.currentAnim.key == 'archerShoot')){
+            this.archer.flipX = false;
+            if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerIdle'){
+                this.archer.anims.play('archerIdle');
+            } 
+        }
+
         //try to add a new obstacle to the scene
         if (this.getTime() >= this.nextObstacleTime){
             if (Phaser.Math.Between(1, 100) < 5){
@@ -429,6 +461,7 @@ class Play extends Phaser.Scene {
 
         //return to menu
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyESC)){
+            this.music.stop();
             this.scene.start('menu');
         }
 

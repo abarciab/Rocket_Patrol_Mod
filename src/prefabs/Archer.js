@@ -17,6 +17,9 @@ class Archer extends Phaser.GameObjects.Sprite {
         //arrows
         this.arrowGroup = new ArrowGroup(scene);
         this.arrowsReady = game.settings.maxArrows;
+        this.movingLeft = false;
+        this.movingRight = false;
+        this.shooting = false;
     }
 
     update(updatedTime){
@@ -40,8 +43,16 @@ class Archer extends Phaser.GameObjects.Sprite {
         //moving
         if (keyLEFT.isDown && this.x >= borderUISize + this.width) {
             this.x -= this.moveSpeed;
+            this.movingLeft = true;
+            this.movingRight = false;
         } else if (keyRIGHT.isDown && this.x <= game.config.width - borderUISize - this.width){
             this.x += this.moveSpeed;
+            this.movingRight = true;
+            this.movingLeft = false;
+        }
+        else{
+            this.movingLeft = false;
+            this.movingRight = false
         }
         
         //firing
@@ -63,6 +74,7 @@ class Archer extends Phaser.GameObjects.Sprite {
     }
 
     fire(){
+        this.shooting = true;
         this.ShootArrow();
         this.sfxShoot.play();
     }
