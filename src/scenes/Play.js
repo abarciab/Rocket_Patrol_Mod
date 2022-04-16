@@ -15,7 +15,6 @@ class Play extends Phaser.Scene {
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
-        this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
         this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});        
 
         if (!game.settings.twoPlayer){
@@ -64,7 +63,7 @@ class Play extends Phaser.Scene {
         this.gameOver = false;
 
         //music
-        this.music = this.sound.add('game_music', {volume: 0.5});
+        this.music = this.sound.add('game_music', {volume: 0.5, loop: true});
         this.music.play();
 
         //obstacles
@@ -149,12 +148,16 @@ class Play extends Phaser.Scene {
 
     setupBorders(){
         //green bar
-        this.add.rectangle(0, 20, game.config.width, 80, 0x00FF00).setOrigin(0,0).setDepth(6);
+        //this.add.rectangle(0, 0, game.config.width, 80, 0xFFFFFF).setOrigin(0,0).setDepth(6);
         //white borders
-        this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
-        this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
-        this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
-        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
+        //this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
+        this.add.sprite(game.config.width/2, -1, 'sign').setOrigin(0.5, 0).setScale(20, 1).setDepth(6);
+
+        this.add.sprite(game.config.width/2, game.config.height + 35, 'sign').setOrigin(0.5, 1).setScale(20, 1).setDepth(6);
+
+        //this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
+        //this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
+        //this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
     }
 
     setUpScoreboard(){
@@ -165,7 +168,7 @@ class Play extends Phaser.Scene {
             frontFamily: 'Courier',
             fontSize: '28px',
             backgroundColor: '#F3B141',
-            color: '#843605',
+            color: '#f7efcd',
             align: 'right',
             padding: {
                 top: 5,
@@ -173,12 +176,27 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.archerScore = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
-        this.dispatcherScore = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize + borderPadding*2, this.score, this.scoreConfig).setDepth(10);
-        this.timeRemaining = this.add.text(game.config.width - borderPadding - borderUISize, borderUISize + borderPadding*4, game.settings.gameTimer, this.scoreConfig).setOrigin(1, 0).setDepth(7);
+        this.archerScore = this.add.text(borderUISize, borderUISize/2-5, this.score, this.scoreConfig).setDepth(11);
+        this.dispatcherScore = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize/2-5, this.score, this.scoreConfig).setDepth(11);
+        this.scoreConfig.align = 'center';
+        this.timeRemaining = this.add.text(game.config.width/2, borderUISize + borderPadding*4, game.settings.gameTimer, this.scoreConfig).setOrigin(.5, 0).setDepth(7);
+       
+        this.scoreConfig.align = 'left';
 
-        this.scoreHandle = this.physics.add.sprite(game.config.width/2, borderUISize + borderPadding*1.5, 'handle').setDepth(12).setScale(0.5, 1);
-        this.scorebar = this.physics.add.sprite(game.config.width/2, borderUISize + borderPadding*1.5, 'bar').setDepth(11).setScale(20, 1);
+        this.scoreHandle = this.physics.add.sprite(game.config.width/2, borderUISize/2+10, 'handle').setOrigin(0.5, 0.5).setDepth(11).setScale(0.5, 1);
+        this.scorebar = this.physics.add.sprite(game.config.width/2, borderUISize/2+10, 'bar').setOrigin(0.5).setDepth(10).setScale(20, 1);
+
+        if (!game.settings.twoPlayer){
+            this.scorebar.setVisible(false);
+            this.scoreHandle.setVisible(false);
+            this.dispatcherScore.setVisible(false);
+            this.archerScore.x = game.config.width/2;
+            this.archerScore.y = game.config.height-borderUISize/2;
+            this.archerScore.setOrigin(0.5);
+            this.timeRemaining.y = borderUISize/2-5;
+        }
+        this.wagonsLeft = game.settings.wagonsAllowed;
+        this.timeRemaining.text = this.wagonsLeft;
     }
 
     updateIcons(arrowsReady, activeWagons){
@@ -209,8 +227,24 @@ class Play extends Phaser.Scene {
     }
 
     endGame() {
-        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5).setDepth(7);
-        this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ESC for Menu', this.scoreConfig).setOrigin(0.5).setDepth(7);
+        let string = "P1 - Archer - won!"
+        if (this.score < 0){
+            string = "P2 - Wagon master - won!"
+        }
+        else if (this.score == 0) {
+            string = "It's a tie!";
+        }
+        if (!game.settings.twoPlayer){
+            string = "Final Score: " + this.p1Score;
+        }
+        this.add.sprite(game.config.width/2, game.config.height/2, 'long_sign').setScale(1.5, 1).setDepth(7);
+
+        this.scoreConfig.backgroundColor = null;
+
+        this.add.text(game.config.width/2, game.config.height/2 - 60, 'GAME OVER', this.scoreConfig).setOrigin(0.5).setDepth(7);
+        this.add.text(game.config.width/2, game.config.height/2 - 10, string, this.scoreConfig).setOrigin(0.5).setDepth(7);
+        this.scoreConfig.fontSize = '23px';
+        this.add.text(game.config.width/2, game.config.height/2 + 40, 'Press (R) to Restart or ESC for Menu', this.scoreConfig).setOrigin(0.5).setDepth(7);
         this.gameOver = true;
 
         this.wagonGroup.children.iterate( (wagon) => {
@@ -265,6 +299,15 @@ class Play extends Phaser.Scene {
 
         this.scoreHandle.x += change/2;
         this.scorebar.x += change/2;
+
+        if (!game.settings.twoPlayer && change < 0){
+            this.wagonsLeft -= 1;
+            this.timeRemaining.text = this.wagonsLeft;
+        }
+
+        if (this.wagonsLeft == 0){
+            this.endGame();
+        }
     }
 
     update(){
@@ -279,7 +322,7 @@ class Play extends Phaser.Scene {
         //countdown timer
         let elapsedTime = this.getTime() - this.startTime;  
         let timeLeft = Math.floor((game.settings.gameTimer - elapsedTime)/1000);
-        if (timeLeft <= 0 && !this.gameOver){
+        if (timeLeft <= 0 && !this.gameOver && game.settings.twoPlayer){
             this.endGame();
         }
 
@@ -290,7 +333,8 @@ class Play extends Phaser.Scene {
             this.archer.update(this.getTime());
 
             //update UI
-            this.timeRemaining.text = timeLeft;
+            if (game.settings.twoPlayer)
+            { this.timeRemaining.text = timeLeft; }
             
             //move background
             this.field.tilePositionX -= game.settings.environmentSpeed;
@@ -442,7 +486,7 @@ class Obstacle extends Phaser.Physics.Arcade.Sprite{
 
     update(){
 
-        if (this.x >= game.config.width){
+        if (this.x >= game.config.width + this.displayWidth){
             this.setActive(false);
             this.setVisible(false);
         }
@@ -451,7 +495,7 @@ class Obstacle extends Phaser.Physics.Arcade.Sprite{
     Spawn(y, depth){
         this.setActive(true);
         this.setVisible(true);
-        this.x = 0;
+        this.x = -80;
         this.y = y;
         this.setDepth(depth);
     }

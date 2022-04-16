@@ -20,6 +20,9 @@ class Menu extends Phaser.Scene {
         this.load.audio('game_music', './assets/game music.wav');
         this.load.audio('menu_music', './assets/menu music.wav');
 
+        //animations
+        this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
+
     }
 
     create(){
@@ -50,41 +53,45 @@ class Menu extends Phaser.Scene {
         this.titleBack = this.add.sprite(game.config.width/2, game.config.height/8, 'sign').setOrigin(0.5);
         this.title = this.add.text(game.config.width/2, game.config.height/8, 'FOREST PATROL', menuConfig).setOrigin(0.5);
 
+        this.add.sprite(400, 100, 'wagonMove');
+        this.add.sprite(1100, 100, 'wagonMove').flipX = true;
+
+
         //2 player mode:
         //p1
-            this.p1Back = this.add.sprite(borderPadding*17, game.config.height/2 - borderPadding*11 + 30, 'sign').setOrigin(0.5).setScale(1, 0.75);
-            this.p1InsctructionsBack = this.add.sprite(borderPadding*17, game.config.height/2 - 20, 'long_sign').setOrigin(0.5).setScale(1.5, 1);
-            this.p1 = this.add.text(borderPadding*17, game.config.height/2 - borderPadding*11 + 30, 'P1: Archer', menuConfig).setOrigin(0.5);
+            this.p1Back = this.add.sprite(borderUISize*7, game.config.height/2 - borderPadding*11 + 30, 'sign').setOrigin(0.5).setScale(1, 0.75);
+            this.p1InsctructionsBack = this.add.sprite(borderUISize*7, game.config.height/2 - 20, 'long_sign').setOrigin(0.5).setScale(1.5, 1);
+            this.p1 = this.add.text(borderUISize*7, game.config.height/2 - borderPadding*11 + 30, 'P1: Archer', menuConfig).setOrigin(0.5);
             menuConfig.fontSize = '20px';
-            this.p1Instructions1 = this.add.text(borderPadding*17 - this.p1InsctructionsBack.displayWidth/2 + 30, game.config.height/3 + borderPadding*4, 'Use (A) and (D) to move left and right\n(W) to shoot arrows', menuConfig).setOrigin(0, 0.5);
-            this.p1Instructions2 = this.add.text(borderPadding*17 - this.p1InsctructionsBack.displayWidth/2 + 30, game.config.height/3 + borderPadding*7 + 4, 'Shoot wagons before they reach the left\nside of the screen. Further wagons are\nworth more points!', menuConfig).setOrigin(0, 0.5);
+            this.p1Instructions1 = this.add.text(borderUISize*7 - this.p1InsctructionsBack.displayWidth/2 + 30, game.config.height/3 + borderPadding*4, 'Use (A) and (D) to move left and right\n(W) to shoot arrows', menuConfig).setOrigin(0, 0.5);
+            this.p1Instructions2 = this.add.text(borderUISize*7 - this.p1InsctructionsBack.displayWidth/2 + 30, game.config.height/3 + borderPadding*7 + 4, 'Shoot wagons before they reach the left\nside of the screen. Further wagons are\nworth more points!', menuConfig).setOrigin(0, 0.5);
             
         //p2
             menuConfig.fontSize = '30px';
-            this.p2Back = this.add.sprite(game.config.width - borderPadding*17, game.config.height/2 - borderPadding*11 + 30, 'sign').setOrigin(0.5).setScale(1, 0.75);
-            this.p2InsctructionsBack = this.add.sprite(game.config.width - borderPadding*17, game.config.height/2 - 20, 'long_sign').setOrigin(0.5).setScale(1.5, 1);
-            this.p2 = this.add.text(game.config.width - borderPadding*17, game.config.height/2 - borderPadding*11 + 30, 'P2: wagon master', menuConfig).setOrigin(0.5);
+            this.p2Back = this.add.sprite(game.config.width - borderUISize*7, game.config.height/2 - borderPadding*11 + 30, 'sign').setOrigin(0.5).setScale(1, 0.75);
+            this.p2InsctructionsBack = this.add.sprite(game.config.width - borderUISize*7, game.config.height/2 - 20, 'long_sign').setOrigin(0.5).setScale(1.5, 1);
+            this.p2 = this.add.text(game.config.width - borderUISize*7, game.config.height/2 - borderPadding*11 + 30, 'P2: wagon master', menuConfig).setOrigin(0.5);
             menuConfig.fontSize = '20px';
-            this.p2Instructions1 = this.add.text(680, game.config.height/3 + borderPadding*2, 'Use (O), (K), and (M) to dispatch wagons', menuConfig).setOrigin(0);
-            this.p2Instructions2 = this.add.text(680, game.config.height/3 + borderPadding*4, 'Get wagons across the screen. Wagons\ncloser to the archer are worth\nmore points!', menuConfig).setOrigin(0);
+            this.p2Instructions1 = this.add.text(920, game.config.height/3 + borderPadding*2, 'Use (O), (K), and (M) to dispatch wagons', menuConfig).setOrigin(0);
+            this.p2Instructions2 = this.add.text(920, game.config.height/3 + borderPadding*4, 'Get wagons across the screen. Wagons\ncloser to the archer are worth\nmore points!', menuConfig).setOrigin(0);
             menuConfig.fontSize = '30px';
             menuConfig.align = 'center';
             menuConfig.stroke = '#f7efcd'
             menuConfig.strokeThickness = 2;
-            this.twoPlayerRulesBack = this.add.sprite(game.config.width/2, game.config.height/2 + borderPadding*11, 'sign').setOrigin(0.5).setScale(2.2, 1.5);
-            this.twoPlayerRules = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*8, 'Press space to start\n\n(up arrow to switch to singleplayer mode)', menuConfig).setOrigin(0.5);
+            this.twoPlayerRulesBack = this.add.sprite(game.config.width/2, game.config.height/2 + borderPadding*11, 'sign').setOrigin(0.5).setScale(2.5, 1.7);
+            this.twoPlayerRules = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*8, 'Press SPACE to start\n\n(up arrow to switch to singleplayer mode)', menuConfig).setOrigin(0.5);
 
         //single player mode:
-        this.spInsctructionsBack = this.add.sprite(game.config.width/2, game.config.height/2 - 20, 'long_sign').setOrigin(0.5).setScale(1.5, 1).setVisible(false);
+        this.spInsctructionsBack = this.add.sprite(game.config.width/2,  game.config.height/2 - borderPadding*11 + 100, 'long_sign').setOrigin(0.5).setScale(1.5, 1.2).setVisible(false);
         menuConfig.fontSize = '20px';
         menuConfig.strokeThickness = 0;
 
-        this.singlePlayerInstructions1 =this.add.text(game.config.width/2, game.config.height/3 + borderPadding*4, 'Use (A) and (D) to move left and right\n(W) to shoot arrows', menuConfig).setOrigin(0.5, 0.5).setVisible(false);
-        this.singlePlayerInstructions2 = this.add.text(game.config.width/2, game.config.height/3 + borderPadding*8, 'Shoot wagons before they reach the left\nside of the screen. Further wagons are\nworth more points!', menuConfig).setOrigin(0.5, 0.5).setVisible(false);
+        this.singlePlayerInstructions1 =this.add.text(game.config.width/2, game.config.height/3 - 20, 'Use (A) and (D) to move left and right\n(W) to shoot arrows', menuConfig).setOrigin(0.5, 0.5).setVisible(false);
+        this.singlePlayerInstructions2 = this.add.text(game.config.width/2, game.config.height/3 + 70, 'Shoot wagons before they reach the left\nside of the screen. Further wagons are\nworth more points! \n\nGame ends when 5 wagons reach the\nleft of the screen', menuConfig).setOrigin(0.5, 0.5).setVisible(false);
 
         menuConfig.fontSize = '30px',
         menuConfig.strokeThickness = 2;
-        this.singlePlayerRules = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*8, 'Press space to start\n\n(up arrow to switch to two player mode)', menuConfig).setOrigin(0.5).setVisible(false);
+        this.singlePlayerRules = this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding*8, 'Press SPACE to start\n\n(down arrow to switch to two player mode)', menuConfig).setOrigin(0.5).setVisible(false);
 
         //keys
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
@@ -95,9 +102,9 @@ class Menu extends Phaser.Scene {
 
         game.settings = {
             wagonScale: 1.5,
-            archerMoveSpeed: 4,
+            archerMoveSpeed: 4.5     ,
             wagonSpeed: 230,
-            gameTimer: 75000,
+            gameTimer: 60000,
             arrowReloadSpeed: 2,
             twoPlayer: true,
             environmentSpeed: 2,
@@ -107,6 +114,7 @@ class Menu extends Phaser.Scene {
             lanePointsWagon: [0, 60, 40, 30], //starting with the bottom lane, this is the number of points the dispatcher gets for each wagon that makes it across
             laneCooldown: 1200,
             maxArrows: 5,
+            wagonsAllowed: 5, //the number of wagons that can make it across in single player before the game ends [single player only]
         }
     }
 
