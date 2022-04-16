@@ -20,7 +20,8 @@ class Menu extends Phaser.Scene {
         this.load.audio('step', './assets/footstep.wav');
 
         //load music
-        this.load.audio('game_music', './assets/game music.wav');
+        this.load.audio('game_music', './assets/main song v2.wav');
+        //this.load.audio('game_music', './assets/background music.mid');
         this.load.audio('menu_music', './assets/menu music.wav');
 
         //animations

@@ -370,7 +370,7 @@ class Play extends Phaser.Scene {
 
 
         if (this.archer.shooting && !this.gameOver){
-            this.archer.flipX = false;
+            //this.archer.flipX = false;
             this.archer.anims.play("archerShoot");
             this.archer.shooting = false;
         }
@@ -387,7 +387,7 @@ class Play extends Phaser.Scene {
             }   
         }
         else if ((this.gameOver) || (!this.archer.movingRight && !this.archer.movingLeft && !(this.archer.anims.isPlaying && this.archer.anims.currentAnim.key == 'archerShoot'))){
-            this.archer.flipX = false;
+            //this.archer.flipX = false;
             if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerIdle'){
                 this.archer.anims.play('archerIdle');
             } 

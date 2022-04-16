@@ -44,20 +44,23 @@ class Archer extends Phaser.GameObjects.Sprite {
         //moving
         if (keyLEFT.isDown && this.x >= borderUISize + this.width) {
             if (!this.sfxFootstep.isPlaying){
-                this.sfxFootstep.play({volume: 0.5});
+                this.sfxFootstep.play({volume: 0.2});
             }
             this.x -= this.moveSpeed;
             this.movingLeft = true;
             this.movingRight = false;
         } else if (keyRIGHT.isDown && this.x <= game.config.width - borderUISize - this.width){
             if (!this.sfxFootstep.isPlaying){
-                this.sfxFootstep.play();
+                this.sfxFootstep.play({volume: 0.2});
             }
             this.x += this.moveSpeed;
             this.movingRight = true;
             this.movingLeft = false;
         }
         else{
+            if (this.sfxFootstep.isPlaying){
+                this.sfxFootstep.stop();
+            }
             this.sfxFootstep.stop();
             this.movingLeft = false;
             this.movingRight = false
