@@ -55,7 +55,7 @@ class Menu extends Phaser.Scene {
         }
         
         this.titleBack = this.add.sprite(game.config.width/2, game.config.height/8, 'sign').setOrigin(0.5);
-        this.title = this.add.text(game.config.width/2, game.config.height/8, 'FOREST PATROL', menuConfig).setOrigin(0.5);
+        this.title = this.add.text(game.config.width/2, game.config.height/8, 'WAGON WATCH', menuConfig).setOrigin(0.5);
 
         this.add.sprite(400, 100, 'wagonMove');
         this.add.sprite(1100, 100, 'wagonMove').flipX = true;
