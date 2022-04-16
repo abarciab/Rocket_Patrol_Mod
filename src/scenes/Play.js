@@ -5,7 +5,7 @@ class Play extends Phaser.Scene {
 
     preload(){
         //images
-        
+        this.load.image('sign_hollow', './assets/wood sign cutout.png');
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('tree', './assets/tree.png');
         this.load.image('arrow', './assets/arrow.png');
@@ -151,7 +151,12 @@ class Play extends Phaser.Scene {
         //this.add.rectangle(0, 0, game.config.width, 80, 0xFFFFFF).setOrigin(0,0).setDepth(6);
         //white borders
         //this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0).setDepth(7);
-        this.add.sprite(game.config.width/2, -1, 'sign').setOrigin(0.5, 0).setScale(20, 1).setDepth(6);
+        if (game.settings.twoPlayer){
+            this.add.sprite(game.config.width/2, -1, 'sign_hollow').setOrigin(0.5, 0).setScale(5, 1).setDepth(8);
+        } else{
+            this.add.sprite(game.config.width/2, -1, 'sign').setOrigin(0.5, 0).setScale(5, 1).setDepth(6);
+        }
+        
 
         this.add.sprite(game.config.width/2, game.config.height + 35, 'sign').setOrigin(0.5, 1).setScale(20, 1).setDepth(6);
 
@@ -170,6 +175,7 @@ class Play extends Phaser.Scene {
             backgroundColor: '#F3B141',
             color: '#f7efcd',
             align: 'right',
+
             padding: {
                 top: 5,
                 bottom: 5, 
@@ -183,8 +189,8 @@ class Play extends Phaser.Scene {
        
         this.scoreConfig.align = 'left';
 
-        this.scoreHandle = this.physics.add.sprite(game.config.width/2, borderUISize/2+10, 'handle').setOrigin(0.5, 0.5).setDepth(11).setScale(0.5, 1);
-        this.scorebar = this.physics.add.sprite(game.config.width/2, borderUISize/2+10, 'bar').setOrigin(0.5).setDepth(10).setScale(20, 1);
+        this.scorebar = this.physics.add.sprite(game.config.width/2, borderUISize/2+20, 'bar').setOrigin(0.5).setDepth(7).setScale(20, 2);
+        this.scoreHandle = this.physics.add.sprite(game.config.width/2, borderUISize/2+10, 'handle').setOrigin(0.5, 0.5).setDepth(7).setScale(0.5, 2);
 
         if (!game.settings.twoPlayer){
             this.scorebar.setVisible(false);
@@ -235,7 +241,7 @@ class Play extends Phaser.Scene {
             string = "It's a tie!";
         }
         if (!game.settings.twoPlayer){
-            string = "Final Score: " + this.p1Score;
+            string = "Final Score: " + this.p1Score.toLocaleString(undefined);
         }
         this.add.sprite(game.config.width/2, game.config.height/2, 'long_sign').setScale(1.5, 1).setDepth(7);
 
@@ -251,7 +257,7 @@ class Play extends Phaser.Scene {
             wagon.anims.stop();
             wagon.stop();
          });
-        this.music.stop();
+        //this.music.stop();
     }
 
     getTime(){
@@ -283,6 +289,7 @@ class Play extends Phaser.Scene {
         if (arrow.visible && wagon.visible){
             arrow.reset();
             this.killWagon(wagon);
+            this.cameras.main.shake(50, 0.005);
         }
     }
 
@@ -294,20 +301,38 @@ class Play extends Phaser.Scene {
         }
         this.score += change;
 
-        this.archerScore.text = this.p1Score;
-        this.dispatcherScore.text = this.p2Score;
-
-        this.scoreHandle.x += change/2;
-        this.scorebar.x += change/2;
+        this.archerScore.text = this.p1Score.toLocaleString(undefined);
+        this.dispatcherScore.text = this.p2Score.toLocaleString(undefined);
 
         if (!game.settings.twoPlayer && change < 0){
             this.wagonsLeft -= 1;
             this.timeRemaining.text = this.wagonsLeft;
+            this.cameras.main.shake(90, 0.005);
         }
 
         if (this.wagonsLeft == 0){
             this.endGame();
         }
+
+        console.log('score: ${this.score}, change: ${change}');
+
+        if (this.score > 730 && this.score-change < 730){
+            change = 730 - (this.score-change);
+        } else if (this.score < -730 && this.score-change > -730){
+            change = -730 + (this.score-change);
+        } else if (this.score > 730){
+            change = 0;
+        } else if (this.score < -730){
+            change = 0;
+        }
+
+        console.log('score: ${this.score}, change: ${change}');
+
+
+        this.scoreHandle.x += change/2;
+            this.scorebar.x += change/2;
+
+        
     }
 
     update(){
@@ -409,6 +434,7 @@ class Play extends Phaser.Scene {
 
         //reset the game
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
+            this.music.stop();
             this.scene.restart();
         }
     }
