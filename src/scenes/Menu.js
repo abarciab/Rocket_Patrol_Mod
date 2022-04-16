@@ -8,6 +8,8 @@ class Menu extends Phaser.Scene {
         this.load.image('field', 'assets/grassy field.png');
         this.load.image('sign' , 'assets/wood sign.png');
         this.load.image('long_sign' , 'assets/wood sign long.png');
+        this.load.image('music_note', './assets/music note.png');
+        this.load.image('volume_button', './assets/volume.png');
 
         // load sfx
         this.load.audio('bow_shot', './assets/bow shot.wav');
@@ -15,6 +17,7 @@ class Menu extends Phaser.Scene {
         this.load.audio('sfx_select', './assets/buttonPress.wav');
         this.load.audio('wagon_sucess', './assets/wagonSucsess.wav');
         this.load.audio('reload_bow', './assets/reload.wav');
+        this.load.audio('step', './assets/footstep.wav');
 
         //load music
         this.load.audio('game_music', './assets/game music.wav');
@@ -26,18 +29,19 @@ class Menu extends Phaser.Scene {
     }
 
     create(){
+        
 
         this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0);
 
-        
-
-
-        let soundConfig = {
-            volume: 0.2
-        }
-
         this.menu_music = this.sound.add('menu_music', {volume: 0.2, loop: true});
         this.menu_music.play();
+
+        this.selectSound = this.sound.add('sfx_select');
+
+        this.musicMuted = false;
+        this.volumeButton = this.add.sprite(game.config.width - borderPadding, game.config.height - borderPadding, 'volume_button').setOrigin(1)
+            .setInteractive()
+            .on('pointerdown', () => this.musicMuted = !this.musicMuted);
 
         let menuConfig = {
             fontSize: '30px',
@@ -120,10 +124,19 @@ class Menu extends Phaser.Scene {
 
     update () {
 
+        if (!this.musicMuted){
+            this.volumeButton.setAlpha(1);
+            this.menu_music.setVolume(0.2);
+        } else {
+            this.volumeButton.setAlpha(0.2);
+            this.menu_music.setVolume(0);
+        }   
+
+
         if (Phaser.Input.Keyboard.JustDown(this.keyUP)){
 
             if (game.settings.twoPlayer == true){
-                this.sound.play('sfx_select');   
+                this.selectSound.play();   
             }
 
             console.log("switching to single player mode");
@@ -150,7 +163,7 @@ class Menu extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.keyDOWN)){
 
             if (game.settings.twoPlayer == false){
-                this.sound.play('sfx_select');   
+                this.selectSound.play();   
             }         
 
             game.settings.twoPlayer = true;
@@ -176,7 +189,7 @@ class Menu extends Phaser.Scene {
 
         if (Phaser.Input.Keyboard.JustDown(keySPACE)){
             
-            this.sound.play('sfx_select');
+            this.selectSound.play();
             this.menu_music.stop();
             this.scene.start('play');
         }

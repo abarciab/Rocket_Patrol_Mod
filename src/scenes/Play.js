@@ -16,8 +16,10 @@ class Play extends Phaser.Scene {
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3}); 
-        this.load.spritesheet('archer', './assets/dude.png', {frameWidth: 45, frameHeight: 58, startFrame: 0, endFrame: 5});        
-
+        this.load.spritesheet('archer', './assets/dude.png', {frameWidth: 45, frameHeight: 58, startFrame: 0, endFrame: 5});     
+        
+        //audio
+       
         if (!game.settings.twoPlayer){
             this.load.audio('wagon_success_bad', './assets/wagon success singleplayer.wav');
         }
@@ -46,7 +48,20 @@ class Play extends Phaser.Scene {
         //background
         this.field = this.add.tileSprite(0,0, game.config.width, game.config.height, 'field').setOrigin(0,0);
 
+        this.sfxMuted = false;
+        this.musicMuted = false;
+        this.volumeButton = this.add.sprite(game.config.width - borderPadding, game.config.height , 'volume_button').setOrigin(1)
+            .setInteractive()
+            .setDepth(13)
+            .on('pointerdown', () => this.musicMuted = !this.musicMuted);
+
         //creating the wagon group and wagons
+        if (game.settings.twoPlayer){
+            game.settings.wagonSpeed *= 1.1;
+            game.settings.lanePointsArcher[1] = 5
+            game.settings.lanePointsArcher[2] = 15
+            game.settings.lanePointsArcher[3] = 25
+        }
         this.wagonGroup = new WagonGroup(this);
         this.wagonGroup.children.iterate( (wagon) => {
             wagon.anims.play('wagonMoveAnim', true);
@@ -54,7 +69,7 @@ class Play extends Phaser.Scene {
             wagon.setOrigin(0);
             wagon.body.setSize(90, 40);
         });
-
+       
         //this.add.sprite(game.config.width/2, game.config.height/2, 'dude');
          
         //creating archer and arrows
@@ -344,24 +359,34 @@ class Play extends Phaser.Scene {
 
     update(){
 
-        if (this.archer.shooting){
+        if (!this.musicMuted){
+            this.volumeButton.setAlpha(1);
+            this.music.setVolume(0.2);
+        } else {
+            this.volumeButton.setAlpha(0.2);
+            this.music.setVolume(0);
+        }   
+       
+
+
+        if (this.archer.shooting && !this.gameOver){
             this.archer.flipX = false;
             this.archer.anims.play("archerShoot");
             this.archer.shooting = false;
         }
-        else if (this.archer.movingRight){
+        else if (this.archer.movingRight && !this.gameOver){
             this.archer.flipX = false;
             if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerMove'){
                 this.archer.anims.play('archerMove');
             }            
         }
-        else if (this.archer.movingLeft){
+        else if (this.archer.movingLeft && !this.gameOver){
             this.archer.flipX = true;
             if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerMove'){
                 this.archer.anims.play('archerMove');
             }   
         }
-        else if (!this.archer.movingRight && !this.archer.movingLeft && !(this.archer.anims.isPlaying && this.archer.anims.currentAnim.key == 'archerShoot')){
+        else if ((this.gameOver) || (!this.archer.movingRight && !this.archer.movingLeft && !(this.archer.anims.isPlaying && this.archer.anims.currentAnim.key == 'archerShoot'))){
             this.archer.flipX = false;
             if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerIdle'){
                 this.archer.anims.play('archerIdle');

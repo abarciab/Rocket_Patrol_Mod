@@ -6,6 +6,7 @@ class Archer extends Phaser.GameObjects.Sprite {
         this.moveSpeed = game.settings.archerMoveSpeed;
         this.sfxShoot = scene.sound.add('bow_shot');
         this.sfxReload = scene.sound.add('reload_bow');
+        this.sfxFootstep = scene.sound.add('step');
 
         //fire cooldown
         this.fireCoolDown = 1000 * game.settings.arrowReloadSpeed;
@@ -42,15 +43,22 @@ class Archer extends Phaser.GameObjects.Sprite {
 
         //moving
         if (keyLEFT.isDown && this.x >= borderUISize + this.width) {
+            if (!this.sfxFootstep.isPlaying){
+                this.sfxFootstep.play({volume: 0.5});
+            }
             this.x -= this.moveSpeed;
             this.movingLeft = true;
             this.movingRight = false;
         } else if (keyRIGHT.isDown && this.x <= game.config.width - borderUISize - this.width){
+            if (!this.sfxFootstep.isPlaying){
+                this.sfxFootstep.play();
+            }
             this.x += this.moveSpeed;
             this.movingRight = true;
             this.movingLeft = false;
         }
         else{
+            this.sfxFootstep.stop();
             this.movingLeft = false;
             this.movingRight = false
         }
