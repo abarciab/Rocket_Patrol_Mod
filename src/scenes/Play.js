@@ -67,7 +67,8 @@ class Play extends Phaser.Scene {
             wagon.anims.play('wagonMoveAnim', true);
             wagon.setScale(game.settings.wagonScale);
             wagon.setOrigin(0);
-            wagon.body.setSize(90, 40);
+            wagon.body.setSize(100, 40);
+            wagon.body.setOffset(20, 0);
         });
        
         //wagon boost cooldown
@@ -381,11 +382,11 @@ class Play extends Phaser.Scene {
         } else if (game.settings.wagonFrequency > 0.01) {
             console.log("wagon frequency: " + game.settings.wagonFrequency);
             game.settings.wagonFrequency *= 0.99;
-            game.settigns.archerMoveSpeed *= 1.01;
+            game.settings.archerMoveSpeed *= 1.01;
         } else if (game.settings.wagonSpeed < 320){
             console.log("wagon speed: " + game.settings.wagonSpeed);
             game.settings.wagonSpeed *= 1.02;
-            game.settigns.archerMoveSpeed *= 1.01;
+            game.settings.archerMoveSpeed *= 1.01;
         }
     }
 

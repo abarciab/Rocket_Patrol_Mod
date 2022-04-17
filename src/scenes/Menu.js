@@ -20,9 +20,8 @@ class Menu extends Phaser.Scene {
         this.load.audio('step', './assets/footstep.wav');
 
         //load music
-        this.load.audio('game_music', './assets/main song v2.wav');
-        //this.load.audio('game_music', './assets/background music.mid');
-        this.load.audio('menu_music', './assets/menu music.wav');
+        this.load.audio('game_music', './assets/main-song-v2.ogg');
+        this.load.audio('menu_music', './assets/menu-music.ogg');
 
         //animations
         this.load.spritesheet('wagonMove', './assets/wagon.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3});
@@ -116,7 +115,7 @@ class Menu extends Phaser.Scene {
             obstacleFrequency: 0.9, //the time, in seconds, the game will wait after spawning on obstacle before trying to make another one. lower valuse = more obstacles
             wagonFrequency: 0.8, //the time, in seconds, the game will wait after dispatching a wagon before trying to dispatch another one. lower valuse = more wagons [single player only]
             lanePointsArcher: [0, 10, 20, 30], //starting with the bottom lane, this is the number of points the archer gets for shooting wagons in each lane
-            lanePointsWagon: [0, 50, 40, 30], //starting with the bottom lane, this is the number of points the dispatcher gets for each wagon that makes it across
+            lanePointsWagon: [0, 30, 20, 10], //starting with the bottom lane, this is the number of points the dispatcher gets for each wagon that makes it across
             laneCooldown: 1200,
             maxArrows: 5,
             wagonsAllowed: 5, //the number of wagons that can make it across in single player before the game ends [single player only]

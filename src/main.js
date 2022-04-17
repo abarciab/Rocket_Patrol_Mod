@@ -1,12 +1,6 @@
 /*
     
-
-
-
-
-
 */
-
 
 let config = {
     type: Phaser.AUTO,
