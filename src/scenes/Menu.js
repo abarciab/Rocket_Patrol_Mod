@@ -12,7 +12,7 @@ class Menu extends Phaser.Scene {
         this.load.image('volume_button', './assets/volume.png');
 
         // load sfx
-        this.load.audio('bow_shot', './assets/bow shot.wav');
+        this.load.audio('bow_shot', './assets/bow-shot.ogg');
         this.load.audio('arrow_impact', './assets/arrow impact.wav');
         this.load.audio('sfx_select', './assets/buttonPress.wav');
         this.load.audio('wagon_sucess', './assets/wagonSucsess.wav');
