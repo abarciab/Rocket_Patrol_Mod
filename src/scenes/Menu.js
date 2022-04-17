@@ -109,7 +109,7 @@ class Menu extends Phaser.Scene {
             wagonScale: 1.5,
             archerMoveSpeed: 4.5     ,
             wagonSpeed: 230,
-            gameTimer: 60000,
+            gameTimer: 90000,
             arrowReloadSpeed: 2,
             twoPlayer: true,
             environmentSpeed: 2,
@@ -120,6 +120,7 @@ class Menu extends Phaser.Scene {
             laneCooldown: 1200,
             maxArrows: 5,
             wagonsAllowed: 5, //the number of wagons that can make it across in single player before the game ends [single player only]
+            singlePlayerWagonChance: 5, //the chance that, every frame after every wagon frequency seconds, a wagon will spawn [single player only]
         }
     }
 

@@ -181,6 +181,8 @@ class Play extends Phaser.Scene {
         keySendWagonMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
         keySendWagonLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
         keyESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+        this.cheatKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     }
 
     setupBorders(){
@@ -200,8 +202,8 @@ class Play extends Phaser.Scene {
             frontFamily: 'Courier',
             fontSize: '28px',
             backgroundColor: '#F3B141',
-            color: '#f7efcd',
-            align: 'right',
+            color: '#000000',
+            align: 'center',
 
             padding: {
                 top: 5,
@@ -211,8 +213,7 @@ class Play extends Phaser.Scene {
         }
         this.archerScore = this.add.text(borderUISize, borderUISize/2-5, this.score, this.scoreConfig).setDepth(11);
         this.dispatcherScore = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize/2-5, this.score, this.scoreConfig).setDepth(11);
-        this.scoreConfig.align = 'center';
-        this.timeRemaining = this.add.text(game.config.width/2, borderUISize + borderPadding*4, game.settings.gameTimer, this.scoreConfig).setOrigin(.5, 0).setDepth(7);
+        this.timeRemaining = this.add.text(game.config.width/2, borderUISize + borderPadding*2, game.settings.gameTimer, this.scoreConfig).setOrigin(.5, 0).setDepth(7);
        
         this.scoreConfig.align = 'left';
 
@@ -220,13 +221,16 @@ class Play extends Phaser.Scene {
         this.scoreHandle = this.physics.add.sprite(game.config.width/2, borderUISize/2+10, 'handle').setOrigin(0.5, 0.5).setDepth(7).setScale(0.5, 2);
 
         if (!game.settings.twoPlayer){
+            this.add.text(game.config.width/2, 15, "Wagons Left:").setDepth(8).setOrigin(0.5);
             this.scorebar.setVisible(false);
             this.scoreHandle.setVisible(false);
             this.dispatcherScore.setVisible(false);
             this.archerScore.x = game.config.width/2;
             this.archerScore.y = game.config.height-borderUISize/2;
             this.archerScore.setOrigin(0.5);
-            this.timeRemaining.y = borderUISize/2-5;
+            this.timeRemaining.y = borderUISize/2 + 4;
+        } else{
+            this.add.text(game.config.width/2, borderUISize*1.4, "Time Left:").setDepth(8).setOrigin(0.5);
         }
         this.wagonsLeft = game.settings.wagonsAllowed;
         this.timeRemaining.text = this.wagonsLeft;
@@ -273,6 +277,8 @@ class Play extends Phaser.Scene {
         this.add.sprite(game.config.width/2, game.config.height/2, 'long_sign').setScale(1.5, 1).setDepth(7);
 
         this.scoreConfig.backgroundColor = null;
+
+        this.scoreConfig.color = '#f7efcd';
 
         this.add.text(game.config.width/2, game.config.height/2 - 60, 'GAME OVER', this.scoreConfig).setOrigin(0.5).setDepth(7);
         this.add.text(game.config.width/2, game.config.height/2 - 10, string, this.scoreConfig).setOrigin(0.5).setDepth(7);
@@ -341,6 +347,12 @@ class Play extends Phaser.Scene {
             this.endGame();
         }
 
+        if (!game.settings.twoPlayer && this.score % 500 == 0){
+            this.wagonsLeft += 1;
+            this.sound.play('wagon_sucess'); 
+            this.timeRemaining.text = this.wagonsLeft;
+        }
+
         //FIX!
         if (this.score > 730 && this.score-change < 730){
             change = 730 - (this.score-change);
@@ -357,6 +369,21 @@ class Play extends Phaser.Scene {
         
     }
 
+    increaseDifficulty(){
+        if (game.settings.singlePlayerWagonChance < 100){
+            game.settings.singlePlayerWagonChance += 1;
+            console.log("wagon chance: " + game.settings.singlePlayerWagonChance);
+        } else if (game.settings.wagonFrequency > 0.01) {
+            console.log("wagon frequency: " + game.settings.wagonFrequency);
+            game.settings.wagonFrequency *= 0.99;
+            game.settigns.archerMoveSpeed *= 1.01;
+        } else if (game.settings.wagonSpeed < 320){
+            console.log("wagon speed: " + game.settings.wagonSpeed);
+            game.settings.wagonSpeed *= 1.02;
+            game.settigns.archerMoveSpeed *= 1.01;
+        }
+    }
+
     update(){
 
         if (!this.musicMuted){
@@ -366,11 +393,8 @@ class Play extends Phaser.Scene {
             this.volumeButton.setAlpha(0.2);
             this.music.setVolume(0);
         }   
-       
-
 
         if (this.archer.shooting && !this.gameOver){
-            //this.archer.flipX = false;
             this.archer.anims.play("archerShoot");
             this.archer.shooting = false;
         }
@@ -387,7 +411,6 @@ class Play extends Phaser.Scene {
             }   
         }
         else if ((this.gameOver) || (!this.archer.movingRight && !this.archer.movingLeft && !(this.archer.anims.isPlaying && this.archer.anims.currentAnim.key == 'archerShoot'))){
-            //this.archer.flipX = false;
             if (!this.archer.anims.isPlaying || this.archer.anims.currentAnim.key != 'archerIdle'){
                 this.archer.anims.play('archerIdle');
             } 
@@ -410,7 +433,7 @@ class Play extends Phaser.Scene {
 
         //update objects
         if (!this.gameOver){
-            //update arrows anr display
+            //update arrows and display
             this.updateIcons(this.archer.arrowsReady, this.wagonGroup.countActive(true));
             this.archer.update(this.getTime());
 
@@ -425,6 +448,13 @@ class Play extends Phaser.Scene {
             if (Phaser.Input.Keyboard.JustDown(keyESC)){
                 this.music.stop();
                 this.scene.start('menu');
+            }
+
+            if (!game.settings.twoPlayer){
+                if (Phaser.Input.Keyboard.JustDown(this.cheatKey)){
+                    this.wagonsLeft += 100;
+                    this.timeRemaining.text = this.wagonsLeft;
+                }
             }
 
             //p2 dispatch wagons
@@ -467,7 +497,8 @@ class Play extends Phaser.Scene {
             //single-player: automatically dispatch wagons
             if (!game.settings.twoPlayer){
                 if (this.getTime() >= this.nexWagonTime){
-                    if (Phaser.Math.Between(1, 100) < 5){
+                    if (Phaser.Math.Between(1, 100) < game.settings.singlePlayerWagonChance){
+                       
                         let lane = this.pickWagonLane();
                         if (lane == this.wagonLane3){
                             this.wagonGroup.dispatch(this.wagonLane3, 3, 0);
@@ -536,6 +567,10 @@ class Play extends Phaser.Scene {
                 boom.destroy();
             });
             this.updateScore(game.settings.lanePointsArcher[wagon.lane])
+            if (!game.settings.twoPlayer){
+                this.increaseDifficulty();
+            }
+        
         }
     }
 }
