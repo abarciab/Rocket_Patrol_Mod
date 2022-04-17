@@ -70,7 +70,8 @@ class Play extends Phaser.Scene {
             wagon.body.setSize(90, 40);
         });
        
-        //this.add.sprite(game.config.width/2, game.config.height/2, 'dude');
+        //wagon boost cooldown
+        this.boostTargetTime = this.getTime();
          
         //creating archer and arrows
         this.archer = new Archer(this, game.config.width/2, game.config.height - borderUISize - borderPadding + 10, 'dude', this.getTime()).setOrigin(0.5, 1).setDepth(7).setScale(1.2);
@@ -116,7 +117,8 @@ class Play extends Phaser.Scene {
             this.wagonIcon3 = this.add.sprite(config.width*0.6 + 160, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
             this.wagonIcon4 = this.add.sprite(config.width*0.6 + 240, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
             this.wagonIcon5 = this.add.sprite(config.width*0.6 + 320, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
-            //this.wagonIcon6 = this.add.sprite(config.width*0.6 + 400, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2);
+            
+            this.boostIcon = this.add.sprite(config.width*0.6 + 400, config.height - borderPadding/2, 'wagonIcon').setOrigin(1).setDepth(8).setScale(1.2).setTint('0xb04a4a');
         }
     }
 
@@ -181,6 +183,9 @@ class Play extends Phaser.Scene {
         keySendWagonMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
         keySendWagonLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
         keyESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        boostTop = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
+        boostMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J);
+        boostLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
 
         this.cheatKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     }
@@ -386,6 +391,7 @@ class Play extends Phaser.Scene {
 
     update(){
 
+
         if (!this.musicMuted){
             this.volumeButton.setAlpha(1);
             this.music.setVolume(0.2);
@@ -433,6 +439,23 @@ class Play extends Phaser.Scene {
 
         //update objects
         if (!this.gameOver){
+
+            //wagon boost
+            if (this.getTime() >= this.boostTargetTime){
+                this.boostIcon.setAlpha(1);
+                if (Phaser.Input.Keyboard.JustDown(boostTop)){
+                    this.boostWagon(this.wagonLane3);
+                }
+                if (Phaser.Input.Keyboard.JustDown(boostMid)){
+                    this.boostWagon(this.wagonLane2);
+                }
+                if (Phaser.Input.Keyboard.JustDown(boostLow)){
+                    this.boostWagon(this.wagonLane1);
+                }
+            } else{
+                this.boostIcon.setAlpha(0.2);
+            }
+
             //update arrows and display
             this.updateIcons(this.archer.arrowsReady, this.wagonGroup.countActive(true));
             this.archer.update(this.getTime());
@@ -525,6 +548,22 @@ class Play extends Phaser.Scene {
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
             this.music.stop();
             this.scene.restart();
+        }
+    }
+
+    boostWagon(yPos){
+        this.boostTargetTime = this.getTime() + (game.settings.wagonBoostCoolDown*1000);
+        let furthestWagon;
+        let furthestX = game.config.width*2;
+
+        this.wagonGroup.children.iterate((wagon) => {
+            if (wagon.y == yPos && wagon.x < furthestX){
+                furthestWagon = wagon;
+                furthestX = wagon.x;
+            }
+        });
+        if (furthestWagon){
+            furthestWagon.boost();
         }
     }
 

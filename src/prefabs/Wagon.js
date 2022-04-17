@@ -40,6 +40,10 @@ class Wagon extends Phaser.GameObjects.Sprite {
         this.madeIt = false;
     }
 
+    boost(){
+        this.x -= game.settings.wagonBoostDist;
+    }
+
     update() {
         if (this.x <= 0 - this.displayWidth){
             this.madeIt = true;

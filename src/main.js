@@ -28,4 +28,4 @@ let borderPadding = borderUISize/3;
 
 const game = new Phaser.Game(config);
 
-let keyF, keyR, keyLEFT, keyRIGHT, keySPACE, keySendWagonHigh, keySendWagonMid, keySendWagonLow, keyESC;
+let keyF, keyR, keyLEFT, keyRIGHT, keySPACE, keySendWagonHigh, keySendWagonMid, keySendWagonLow, keyESC, boostTop, boostMid, boostLow;
