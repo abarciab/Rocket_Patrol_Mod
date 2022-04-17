@@ -441,7 +441,7 @@ class Play extends Phaser.Scene {
         if (!this.gameOver){
 
             //wagon boost
-            if (this.getTime() >= this.boostTargetTime){
+            if (this.getTime() >= this.boostTargetTime && game.settings.twoPlayer){
                 this.boostIcon.setAlpha(1);
                 if (Phaser.Input.Keyboard.JustDown(boostTop)){
                     this.boostWagon(this.wagonLane3);
