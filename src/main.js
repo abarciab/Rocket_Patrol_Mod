@@ -1,7 +1,7 @@
 /*
   Name: Aidan Barcia-Bacon (#845003)
   Project title: Wagon Watch
-  Time to complete: 30-45 hours
+  Time to complete: 25-30 hours
 
   POINTS BREAKDOWN:
     Redesign the game's artwork, UI, and sound to change its theme/aesthetic (to something other than sci-fi) (60)  
@@ -29,8 +29,8 @@
             The arrows, obstacles, and the wagons make use of Phaser's group system, so many can be onscreen at once without duplicate declarations
             There are obstacles that scroll with the background and can block the arrows
             Obstacles (and wagons in single player) are placed semi-randomly by the game
-            And Lastly, I spent a long time trying to improve the game-feel, by tightening up hitboxes, adding effects like screenshake, and adding
-                sound/visual queus to improve player feedback (I'm particularly proud of the wagon boost effect in the multiplayer)
+            And Lastly, I spent a long time trying to improve the game-feel by playtesting, tightening up hitboxes, adding effects like screenshake, and adding
+                sound/visual queus to improve player feedback (I'm particularly proud of the wagon boost effect in multiplayer mode)
 */
 
 let config = {
