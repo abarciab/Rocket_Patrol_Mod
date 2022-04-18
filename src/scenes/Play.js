@@ -548,6 +548,9 @@ class Play extends Phaser.Scene {
     }
 
     boostWagon(wagon){
+        if (!game.settings.twoPlayer){
+            return;
+        }
         if (this.getTime() < this.boostTargetTime){
             console.log("can't boost yet");
             return;
