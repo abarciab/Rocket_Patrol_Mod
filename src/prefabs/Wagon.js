@@ -80,7 +80,6 @@ class Wagon extends Phaser.GameObjects.Sprite {
     dispatch(yPos, laneNumber) {
         if (this.ready && this.body){
             this.lane = laneNumber;
-            console.log("lane updated: " + this.lane);
             this.y = yPos;
             this.x = game.config.width;
             this.ready = false;
