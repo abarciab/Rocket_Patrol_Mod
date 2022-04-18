@@ -17,8 +17,7 @@ class WagonGroup extends Phaser.Physics.Arcade.Group
     dispatch(yPos, laneNumber, depth){
         let wagon = this.getFirstDead(false)
         if (wagon){
-            wagon.lane = laneNumber;
-            wagon.dispatch(yPos);
+            wagon.dispatch(yPos, laneNumber);
             wagon.setDepth(depth);
         }
     }
@@ -36,15 +35,29 @@ class Wagon extends Phaser.GameObjects.Sprite {
             this.dispatch();
         }
 
-        this.lane;
+        this.lane = -1;
         this.madeIt = false;
+
+        this.boostFrames = 0;
+    }
+
+    getLane(){
+        return this.lane;
     }
 
     boost(){
-        this.x -= game.settings.wagonBoostDist;
+        //this.x -= game.settings.wagonBoostDist;
+        this.boostFrames = 18;
+        this.body.setVelocityX(-game.settings.wagonBoostDist);
     }
 
     update() {
+        if (this.boostFrames > 0){
+            this.boostFrames -= 1;
+            if (this.boostFrames == 0){
+                this.body.setVelocityX(-game.settings.wagonSpeed);
+            }
+        }
         if (this.x <= 0 - this.displayWidth){
             this.madeIt = true;
             this.reset();
@@ -64,14 +77,17 @@ class Wagon extends Phaser.GameObjects.Sprite {
         this.body.setVelocityX(0);
     }
 
-    dispatch(yPos) {
+    dispatch(yPos, laneNumber) {
         if (this.ready && this.body){
+            this.lane = laneNumber;
+            console.log("lane updated: " + this.lane);
             this.y = yPos;
             this.x = game.config.width;
             this.ready = false;
             this.setActive(true);
             this.setVisible(true);
             this.body.setVelocityX(-game.settings.wagonSpeed, 0);
+            this.alive = true;
         }
         
     }

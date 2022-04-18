@@ -11,15 +11,13 @@ class Play extends Phaser.Scene {
         this.load.image('handle', './assets/handle.png');
         this.load.image('bar', './assets/colored bar.png');
         this.load.image('wagonIcon', './assets/wagon icon.png');
-        //this.load.image('dude', './assets/dude.png');
 
         //animations
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('wagonFall', './assets/wagon fall.png', {frameWidth: 130, frameHeight: 65, startFrame: 0, endFrame: 3}); 
-        this.load.spritesheet('archer', './assets/dude.png', {frameWidth: 45, frameHeight: 58, startFrame: 0, endFrame: 5});     
+        this.load.spritesheet('archer', './assets/dude.png', {frameWidth: 45, frameHeight: 58, startFrame: 0, endFrame: 5});   
+        this.load.spritesheet('wagonTrail', './assets/wagon dash trails.png', {frameWidth: 63, frameHeight: 33 , startFrame: 0, endFrame: 3});  
         
-        //audio
-       
         if (!game.settings.twoPlayer){
             this.load.audio('wagon_success_bad', './assets/wagon success singleplayer.wav');
         }
@@ -69,8 +67,12 @@ class Play extends Phaser.Scene {
             wagon.setOrigin(0);
             wagon.body.setSize(100, 40);
             wagon.body.setOffset(20, 0);
+            wagon.setInteractive()
+            wagon.on('pointerdown', () => {
+                this.boostWagon(wagon);
+            });
         });
-       
+
         //wagon boost cooldown
         this.boostTargetTime = this.getTime();
          
@@ -154,6 +156,13 @@ class Play extends Phaser.Scene {
             frameRate: 6,
             repeat: -1,
         })
+        //wagon dash anim
+        this.anims.create({
+            key:'wagonDashAnim',
+            frames: this.anims.generateFrameNumbers('wagonTrail', {start: 0, end: 3, first: 0}),
+            frameRate: 10,
+            repeat: 0,
+        })
 
         this.anims.create({
             key:'archerMove',
@@ -180,13 +189,10 @@ class Play extends Phaser.Scene {
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        keySendWagonHigh = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
-        keySendWagonMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
-        keySendWagonLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+        keySendWagonHigh = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FORWARD_SLASH);
+        keySendWagonMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.PERIOD);
+        keySendWagonLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.COMMA);
         keyESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-        boostTop = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
-        boostMid = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J);
-        boostLow = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
 
         this.cheatKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     }
@@ -296,7 +302,6 @@ class Play extends Phaser.Scene {
             wagon.anims.stop();
             wagon.stop();
          });
-        //this.music.stop();
     }
 
     getTime(){
@@ -379,7 +384,7 @@ class Play extends Phaser.Scene {
         if (game.settings.singlePlayerWagonChance < 100){
             game.settings.singlePlayerWagonChance += 1;
             console.log("wagon chance: " + game.settings.singlePlayerWagonChance);
-        } else if (game.settings.wagonFrequency > 0.01) {
+        } else if (game.settings.wagonFrequency > 0.1) {
             console.log("wagon frequency: " + game.settings.wagonFrequency);
             game.settings.wagonFrequency *= 0.99;
             game.settings.archerMoveSpeed *= 1.01;
@@ -391,7 +396,6 @@ class Play extends Phaser.Scene {
     }
 
     update(){
-
 
         if (!this.musicMuted){
             this.volumeButton.setAlpha(1);
@@ -441,19 +445,10 @@ class Play extends Phaser.Scene {
         //update objects
         if (!this.gameOver){
 
-            //wagon boost
+            //wagon boost icon
             if (this.getTime() >= this.boostTargetTime && game.settings.twoPlayer){
                 this.boostIcon.setAlpha(1);
-                if (Phaser.Input.Keyboard.JustDown(boostTop)){
-                    this.boostWagon(this.wagonLane3);
-                }
-                if (Phaser.Input.Keyboard.JustDown(boostMid)){
-                    this.boostWagon(this.wagonLane2);
-                }
-                if (Phaser.Input.Keyboard.JustDown(boostLow)){
-                    this.boostWagon(this.wagonLane1);
-                }
-            } else{
+            } else if (game.settings.twoPlayer){
                 this.boostIcon.setAlpha(0.2);
             }
 
@@ -552,19 +547,25 @@ class Play extends Phaser.Scene {
         }
     }
 
-    boostWagon(yPos){
-        this.boostTargetTime = this.getTime() + (game.settings.wagonBoostCoolDown*1000);
-        let furthestWagon;
-        let furthestX = game.config.width*2;
+    boostWagon(wagon){
+        if (this.getTime() < this.boostTargetTime){
+            console.log("can't boost yet");
+            return;
+        }
+        
+        if (wagon.alive){
+            this.boostTargetTime = this.getTime() + (game.settings.wagonBoostCoolDown*1000);
+            this.sound.play('wagon_dash', {volume: 0.5});
 
-        this.wagonGroup.children.iterate((wagon) => {
-            if (wagon.y == yPos && wagon.x < furthestX){
-                furthestWagon = wagon;
-                furthestX = wagon.x;
-            }
-        });
-        if (furthestWagon){
-            furthestWagon.boost();
+            let trail = this.add.sprite(wagon.x, wagon.y, 'wagonTrail').setOrigin(0).setScale(2).setDepth(wagon.depth);
+            trail.x += 150;
+            trail.y += 10
+            trail.anims.play('wagonDashAnim');
+            trail.on('animationcomplete', () => {
+                trail.destroy();
+            });
+
+            wagon.boost();
         }
     }
 

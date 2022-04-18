@@ -18,6 +18,7 @@ class Menu extends Phaser.Scene {
         this.load.audio('wagon_sucess', './assets/wagonSucsess.wav');
         this.load.audio('reload_bow', './assets/reload.wav');
         this.load.audio('step', './assets/footstep.wav');
+        this.load.audio('wagon_dash', './assets/wagon dash.ogg');
 
         //load music
         this.load.audio('game_music', './assets/main-song-v2.ogg');
@@ -76,8 +77,8 @@ class Menu extends Phaser.Scene {
             this.p2InsctructionsBack = this.add.sprite(game.config.width - borderUISize*7, game.config.height/2 - 20, 'long_sign').setOrigin(0.5).setScale(1.5, 1);
             this.p2 = this.add.text(game.config.width - borderUISize*7, game.config.height/2 - borderPadding*11 + 30, 'P2: wagon master', menuConfig).setOrigin(0.5);
             menuConfig.fontSize = '20px';
-            this.p2Instructions1 = this.add.text(920, game.config.height/3 + borderPadding*2, 'Use (O), (K), and (M) to dispatch wagons', menuConfig).setOrigin(0);
-            this.p2Instructions2 = this.add.text(920, game.config.height/3 + borderPadding*4, 'Get wagons across the screen. Wagons\ncloser to the archer are worth\nmore points!', menuConfig).setOrigin(0);
+            this.p2Instructions1 = this.add.text(920, game.config.height/3 + borderPadding*2, 'Use (/), (.), and (,) to dispatch wagons,\nand click on wagons to boost them!', menuConfig).setOrigin(0);
+            this.p2Instructions2 = this.add.text(920, game.config.height/3 + borderPadding*5, 'Get wagons across the screen. Wagons\ncloser to the archer are worth\nmore points!', menuConfig).setOrigin(0);
             menuConfig.fontSize = '30px';
             menuConfig.align = 'center';
             menuConfig.stroke = '#f7efcd'
@@ -120,7 +121,7 @@ class Menu extends Phaser.Scene {
             maxArrows: 5,
             wagonsAllowed: 5, //the number of wagons that can make it across in single player before the game ends [single player only]
             singlePlayerWagonChance: 5, //the chance that, every frame after every wagon frequency seconds, a wagon will spawn [single player only]
-            wagonBoostDist: 180,
+            wagonBoostDist: 1000,
             wagonBoostCoolDown: 0.8
         }
     }
