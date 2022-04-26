@@ -104,7 +104,7 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
 	constructor(scene) {
 		super(scene.physics.world, scene);
 		this.createMultiple({
-			frameQuantity: 5,
+			frameQuantity: 6,
 			key: 'arrow',
 			active: false,
 			visible: false,
