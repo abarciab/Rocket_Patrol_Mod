@@ -56,7 +56,7 @@ class Play extends Phaser.Scene {
 
         //creating the wagon group and wagons
         if (game.settings.twoPlayer) {
-            game.settings.wagonSpeed *= 1.1;
+            game.settings.wagonSpeed *= 1.2;
             game.settings.lanePointsArcher[1] = 5
             game.settings.lanePointsArcher[2] = 15
             game.settings.lanePointsArcher[3] = 25
